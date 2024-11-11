@@ -1,7 +1,7 @@
 {
  "custom_fields": [],
  "custom_perms": [],
- "doctype": "Packed Item",
+ "doctype": "Project Update",
  "links": [],
  "property_setters": [
   {
@@ -9,26 +9,26 @@
    "_comments": null,
    "_liked_by": null,
    "_user_tags": null,
-   "creation": "2023-04-05 12:55:26.944558",
+   "creation": "2024-08-15 16:46:41.267861",
    "default_value": null,
-   "doc_type": "Packed Item",
+   "doc_type": "Project Update",
    "docstatus": 0,
    "doctype_or_field": "DocField",
-   "field_name": "rate",
+   "field_name": "naming_series",
    "idx": 0,
    "is_system_generated": 0,
-   "modified": "2024-11-10 14:21:37.566309",
+   "modified": "2024-08-15 16:46:41.267861",
    "modified_by": "Administrator",
    "module": null,
-   "name": "Packed Item-rate-read_only",
-   "owner": "vyshakhab@ekata.co.in",
+   "name": "Project Update-naming_series-options",
+   "owner": "Administrator",
    "parent": null,
    "parentfield": null,
    "parenttype": null,
-   "property": "read_only",
-   "property_type": "Check",
+   "property": "options",
+   "property_type": "Text",
    "row_name": null,
-   "value": "0"
+   "value": "PROJ-UPD-.YYYY.-"
   }
  ],
  "sync_on_migrate": 1
