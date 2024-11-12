@@ -153,7 +153,15 @@ fixtures = [
     },
     {
         "dt": "Property Setter"
-	}
+	},
+    {
+        "dt": "Notification",
+        "filters": [
+            [
+                "is_standard", "=", 0
+            ]
+        ]
+    },
 ]
 # DocType Class
 # ---------------
