@@ -1989,7 +1989,7 @@
   "css": "",
   "custom_format": 0,
   "default_print_language": "en-GB",
-  "disabled": 0,
+  "disabled": 1,
   "doc_type": "Sales Invoice",
   "docstatus": 0,
   "doctype": "Print Format",

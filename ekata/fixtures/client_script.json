@@ -2,6 +2,28 @@
  {
   "docstatus": 0,
   "doctype": "Client Script",
+  "dt": "Sales Invoice",
+  "enabled": 1,
+  "modified": "2024-09-23 15:45:20.306106",
+  "module": null,
+  "name": "Sales Invoice Signature Remove",
+  "script": "frappe.ui.form.on('Sales Invoice', {\n    onload: function(frm) {\n        // Hide the signature field\n        frm.toggle_display('authorized_by', false);\n    }\n});\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Purchase Invoice",
+  "enabled": 1,
+  "modified": "2024-11-19 14:24:40.534533",
+  "module": null,
+  "name": "Purchase Invoice Payment Term Fetch",
+  "script": "// Script for Purchase Invoice\nfrappe.ui.form.on('Purchase Invoice', {\n    onload(frm) {\n        // Clear the Payment Schedule table before adding new rows\n        frm.clear_table('payment_schedule');\n\n        // Loop through child table rows in 'items' and fetch linked Purchase Order details\n        let promises = frm.doc.items.map(item => {\n            if (item.purchase_order) {\n                // Fetch Purchase Order document\n                return frappe.db.get_doc('Purchase Order', item.purchase_order).then(purchase_order => {\n                    if (purchase_order.payment_schedule && purchase_order.payment_schedule.length > 0) {\n                        purchase_order.payment_schedule.forEach(schedule => {\n                            // Add rows to the Payment Schedule table in Purchase Invoice\n                            let new_row = frm.add_child('payment_schedule', {\n                                payment_term: schedule.payment_term,\n                                due_date: schedule.due_date,\n                                invoice_portion: schedule.invoice_portion,\n                                payment_amount: schedule.payment_amount\n                            });\n                        });\n                    }\n                }).catch(err => {\n                    console.error(`Error fetching Purchase Order: ${item.purchase_order}`, err);\n                });\n            }\n        });\n\n        // Wait for all fetch operations to complete, then refresh the Payment Schedule table\n        Promise.all(promises).then(() => {\n            frm.refresh_field('payment_schedule');\n        });\n    }\n});\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
   "dt": "Attendance",
   "enabled": 1,
   "modified": "2024-11-06 11:32:26.624638",
