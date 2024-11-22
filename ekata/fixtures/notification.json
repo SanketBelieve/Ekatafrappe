@@ -1,6 +1,5 @@
 [
  {
-  "_liked_by": "[\"Administrator\"]",
   "attach_print": 0,
   "channel": "Email",
   "condition": null,
@@ -42,7 +41,6 @@
   "value_changed": null
  },
  {
-  "_liked_by": "[\"Administrator\"]",
   "attach_print": 0,
   "channel": "Email",
   "condition": null,
@@ -871,7 +869,7 @@
   "value_changed": "workflow_state"
  },
  {
-  "attach_print": 0,
+  "attach_print": 1,
   "channel": "Email",
   "condition": null,
   "date_changed": null,
@@ -882,13 +880,13 @@
   "enabled": 1,
   "event": "Submit",
   "is_standard": 0,
-  "message": "Add your message here",
+  "message": "Dear Buying Team,\n\nThis is to formally request support for a new procurement requirement through the ERP system. The details are as follows:\n\n**Priority:** {{ doc.custom_priority }}  \n**Expected Delivery Date:** {{ doc.custom_expected_delivery_date }}  \n**Reason/Justification:** {{ doc.custom_purpose }}  \n\n**Item Details:**\n\n<table style=\"width:100%; border-collapse:collapse; border: 1px solid #ddd;\">\n    <thead>\n        <tr style=\"background-color:#f2f2f2; text-align:left;\">\n            <th style=\"border: 1px solid #ddd; padding: 8px;\">#</th>\n            <th style=\"border: 1px solid #ddd; padding: 8px;\">Item/Material Description</th>\n            <th style=\"border: 1px solid #ddd; padding: 8px;\">Quantity</th>\n        </tr>\n    </thead>\n    <tbody>\n        {% for item in doc.items %}\n        <tr>\n            <td style=\"border: 1px solid #ddd; padding: 8px;\">{{ loop.index }}</td>\n            <td style=\"border: 1px solid #ddd; padding: 8px;\">{{ item.item_code }}</td>\n            <td style=\"border: 1px solid #ddd; padding: 8px;\">{{ item.qty }}</td>\n        </tr>\n        {% endfor %}\n    </tbody>\n</table>\n\nPlease review and process this request at the earliest. Let me know if you need additional information or clarification to expedite the process.\n\nThank you for your support!\n\nThanks,  \n{{ doc.created_by }}\n",
   "message_type": null,
   "method": null,
-  "modified": "2022-12-16 11:40:25.658082",
+  "modified": "2024-11-21 14:45:08.546263",
   "module": null,
   "name": "Email MR",
-  "print_format": "Export Invoice Cum Packing List",
+  "print_format": "Material Request Print Format",
   "property_value": null,
   "recipients": [
    {
@@ -908,7 +906,7 @@
   "sender_email": "Erp@ekata.co.in",
   "set_property_after_alert": null,
   "slack_webhook_url": null,
-  "subject": "{{ doc.name }} Submit",
+  "subject": "Material Request {{ doc.name }} Submitted ",
   "value_changed": null
  },
  {
