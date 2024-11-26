@@ -152,7 +152,12 @@ fixtures = [
         ]
     },
     {
-        "dt": "Property Setter"
+        "dt": "Property Setter",
+        "filters": [
+            [
+                "is_system_generated", "=", 0
+            ]
+        ]
 	},
     {
         "dt": "Notification",
