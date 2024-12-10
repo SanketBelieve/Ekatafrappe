@@ -225,7 +225,7 @@ doc_events = {
 # ---------------
 
 scheduler_events = {
-"hourly": [
+"weekly": [
           "ekata.ekata.custom_scripts.email_queue.delete_email_queues"
       ],
 "cron": {
