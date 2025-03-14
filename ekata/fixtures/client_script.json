@@ -2,6 +2,50 @@
  {
   "docstatus": 0,
   "doctype": "Client Script",
+  "dt": "Attendance",
+  "enabled": 1,
+  "modified": "2025-02-27 12:44:16.882473",
+  "module": null,
+  "name": "Attendance Script",
+  "script": "frappe.ui.form.on(\"Attendance\", {\n    refresh: function(frm) {\n        // Check if user does NOT have the \"HR Manager\" role\n        if (!frappe.user_roles.includes(\"HR Manager\")) {\n            // Set today's date in attendance_date\n            frm.set_value(\"attendance_date\", frappe.datetime.now_date());\n\n            // Make attendance_date read-only\n            frm.set_df_property(\"attendance_date\", \"read_only\", 1);\n        }\n    }\n});\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Leave Application",
+  "enabled": 1,
+  "modified": "2025-03-06 18:14:16.834585",
+  "module": null,
+  "name": "Leave application - approved by manager",
+  "script": "frappe.ui.form.on('Leave Application', {\r\n    onload: function(frm) {\r\n        // Ensure the field is empty on load\r\n        if (frm.doc.verbally_approved_by_manager === \"YES\") {\r\n            frm.set_value('verbally_approved_by_manager', '');\r\n        }\r\n    },\r\n    validate: function(frm) {\r\n        // Make sure the user selects either YES or NO\r\n        if (!frm.doc.verbally_approved_by_manager) {\r\n            frappe.throw(__('Please select \"Verbally Approved by Manager\" before submitting.'));\r\n        }\r\n    }\r\n});\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Employee",
+  "enabled": 1,
+  "modified": "2025-03-07 01:00:55.051000",
+  "module": null,
+  "name": "Employee payable account",
+  "script": "frappe.ui.form.on('Employee', {\r\n    refresh: function(frm) {\r\n        if (frm.doc.employee) {\r\n            frappe.call({\r\n                method: \"frappe.client.get_list\",\r\n                args: {\r\n                    doctype: \"Salary Structure Assignment\",\r\n                    filters: { employee: frm.doc.employee },\r\n                    fields: [\"payroll_payable_account\"],  // Corrected fieldname\r\n                    order_by: \"creation desc\",\r\n                    limit_page_length: 1\r\n                },\r\n                callback: function(response) {\r\n                    if (response.message && response.message.length > 0) {\r\n                        frm.set_value(\"custom_payable_account\", response.message[0].payroll_payable_account);\r\n                    }\r\n                }\r\n            });\r\n        }\r\n    }\r\n});\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Payroll Entry",
+  "enabled": 1,
+  "modified": "2025-03-07 01:07:26.820084",
+  "module": null,
+  "name": "payroll entry payable account",
+  "script": "frappe.ui.form.on('Payroll Entry', {\r\n    custom_employee: function(frm) {\r\n        if (frm.doc.custom_employee) {\r\n            frappe.db.get_value('Employee', frm.doc.custom_employee, 'custom_payable_account')\r\n                .then(r => {\r\n                    if (r.message && r.message.custom_payable_account) {\r\n                        frm.set_value('payroll_payable_account', r.message.custom_payable_account);\r\n                    } else {\r\n                        frappe.msgprint(__('No Payable Account found for this Employee'));\r\n                    }\r\n                });\r\n        }\r\n    }\r\n});\r\n\r\n\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
   "dt": "Sales Invoice",
   "enabled": 1,
   "modified": "2024-09-23 15:45:20.306106",
@@ -85,6 +129,39 @@
   "module": null,
   "name": "Employee Exit Details Hidden",
   "script": "frappe.ui.form.on('Employee', {\n\trefresh(frm) {\n\t\t// Check if the user is Administrator or has HR Manager role\n\t\tif (frappe.user.name === 'Administrator' || frappe.user.has_role('HR Manager')) {\n\t\t\t// Show the Exit tab\n\t\t\tfrm.toggle_display('exit', true);\n\t\t} else {\n\t\t\t// Hide the Exit tab\n\t\t\tfrm.toggle_display('exit', false);\n\t\t}\n\t}\n});\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Opportunity",
+  "enabled": 1,
+  "modified": "2025-03-13 17:41:22.734423",
+  "module": "Ekata",
+  "name": "Feedback Opportunity",
+  "script": "frappe.ui.form.on('Opportunity', {\n    refresh: function(frm) {\n        // Show button only if Opportunity is submitted\n        if (!frm.is_new()) {  // docstatus 1 = Submitted\n            frm.add_custom_button(__('Create Feedback'), function() {\n                frappe.call({\n                    method: 'ekata.ekata.doctype.feedback.feedback.create_feedback_from_opportunity', // Adjust path as per your module\n                    args: {\n                        opportunity_name: frm.doc.name\n                    },\n                    callback: function(r) {\n                        if (r.message) {\n                            frappe.show_alert(__('Feedback Created: ' + r.message));\n                            frappe.set_route(\"Form\", \"Feedback\", r.message);\n                        }\n                    }\n                });\n            }).addClass(\"btn-primary\");  // Makes it a blue primary button\n        }\n    }\n});\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Feedback",
+  "enabled": 1,
+  "modified": "2025-03-14 19:43:20.022440",
+  "module": "Ekata",
+  "name": "Feedback Script",
+  "script": "frappe.ui.form.on('Feedback', {\n    refresh: function (frm) {\n        if (!frm.is_new()) {\n            frm.add_custom_button(__('Create Customer'), function () {\n                frappe.model.with_doctype('Customer', function () {\n                    let customer = frappe.model.get_new_doc('Customer');\n\n                    let dialog = new frappe.ui.Dialog({\n                        title: __('Create Customer'),\n                        fields: [\n                            { fieldname: 'customer_name', label: __('Customer Name'), fieldtype: 'Data', reqd: 1 },\n                            { fieldname: 'customer_type', label: __('Customer Type'), fieldtype: 'Select', options: ['Company', 'Individual'], reqd: 1 },\n                            { fieldname: 'customer_group', label: __('Customer Group'), fieldtype: 'Link', options: 'Customer Group', reqd: 1 },\n                            { fieldname: 'territory', label: __('Territory'), fieldtype: 'Link', options: 'Territory', reqd: 1 },\n                            { fieldname: 'email_id', label: __('Email ID'), fieldtype: 'Data' },\n                            { fieldname: 'phone', label: __('Phone'), fieldtype: 'Data' },\n                            { fieldname: 'section_break', fieldtype: 'Section Break', label: 'Billing Address' },\n                            { fieldname: 'billing_address', label: __('Billing Address'), fieldtype: 'Small Text' },\n                            { fieldname: 'billing_city', label: __('City'), fieldtype: 'Data' },\n                            { fieldname: 'billing_state', label: __('State'), fieldtype: 'Select', options: get_state_options(), reqd: 1 },\n                            { fieldname: 'billing_country', label: __('Country'), fieldtype: 'Link', options: 'Country', default: 'India', reqd: 1 },\n                            { fieldname: 'billing_pincode', label: __('Pincode'), fieldtype: 'Data' },\n                            { fieldname: 'section_break2', fieldtype: 'Section Break', label: 'Shipping Address' },\n                            { fieldname: 'shipping_address', label: __('Shipping Address'), fieldtype: 'Small Text' },\n                            { fieldname: 'shipping_city', label: __('City'), fieldtype: 'Data' },\n                            { fieldname: 'shipping_state', label: __('State'), fieldtype: 'Select', options: get_state_options(), reqd: 1 },\n                            { fieldname: 'shipping_country', label: __('Country'), fieldtype: 'Link', options: 'Country', default: 'India', reqd: 1 },\n                            { fieldname: 'shipping_pincode', label: __('Pincode'), fieldtype: 'Data' }\n                        ],\n                        primary_action_label: __('Save'),\n                        primary_action(values) {\n                            frappe.call({\n                                method: 'frappe.client.insert',\n                                args: {\n                                    doc: Object.assign(customer, values) // Merge values with new customer doc\n                                },\n                                callback: function (response) {\n                                    if (response.message) {\n                                        let new_customer = response.message.name;\n                                        frappe.msgprint(__('Customer {0} created successfully!', [new_customer]));\n\n                                        // Set Customer in Feedback form\n                                        frm.set_value('customer', new_customer);\n                                        frm.refresh_field('customer');\n\n                                        // Create Billing Address\n                                        if (values.billing_address) {\n                                            create_address(new_customer, values, 'Billing', values.billing_address, values.billing_city, values.billing_state, values.billing_country, values.billing_pincode);\n                                        }\n\n                                        // Create Shipping Address\n                                        if (values.shipping_address) {\n                                            create_address(new_customer, values, 'Shipping', values.shipping_address, values.shipping_city, values.shipping_state, values.shipping_country, values.shipping_pincode);\n                                        }\n\n                                        dialog.hide();\n                                    }\n                                }\n                            });\n                        }\n                    });\n\n                    dialog.show();\n                });\n            }, __('Actions'));\n        }\n    }\n});\n\n// Function to create Address linked to the Customer\nfunction create_address(customer_name, values, address_type, address_line, city, state, country, pincode) {\n    let address_doc = {\n        doctype: 'Address',\n        address_title: customer_name + ' ' + address_type,\n        address_type: address_type,\n        address_line1: address_line,\n        city: city,\n        state: state,\n        country: country,\n        pincode: pincode,\n        links: [{ link_doctype: 'Customer', link_name: customer_name }]\n    };\n\n    frappe.call({\n        method: 'frappe.client.insert',\n        args: { doc: address_doc },\n        callback: function (res) {\n            if (res.message) {\n                frappe.msgprint(__('{} Address Created for Customer: {}', [address_type, customer_name]));\n            }\n        }\n    });\n}\n\n// Function to return the list of Indian States\nfunction get_state_options() {\n    return [\n        'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',\n        'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',\n        'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',\n        'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',\n        'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',\n        'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Andaman and Nicobar Islands',\n        'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Lakshadweep',\n        'Delhi', 'Puducherry', 'Ladakh', 'Jammu and Kashmir'\n    ].join('\\n'); // Converts array to newline-separated string for Frappe Select field\n}\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Feedback",
+  "enabled": 1,
+  "modified": "2025-03-14 20:03:54.859254",
+  "module": "Ekata",
+  "name": "Feedback Script 2",
+  "script": "frappe.ui.form.on('Feedback', {\n    refresh: function(frm) {\n        // Show \"Create Quotation\" button only if Feedback is saved (docstatus 0 or 1)\n        if (!frm.is_new()) {  \n            frm.add_custom_button(__('Create Quotation'), function() {\n                frappe.call({\n                    method: 'ekata.ekata.doctype.feedback.feedback.create_quotation_from_feedback', // Adjust path\n                    args: {\n                        feedback_name: frm.doc.name\n                    },\n                    callback: function(r) {\n                        if (r.message) {\n                            frappe.show_alert(__('Quotation Created: ' + r.message));\n                            frappe.set_route(\"Form\", \"Quotation\", r.message);\n                        }\n                    }\n                });\n            }).addClass(\"btn-success\");  // Green button for visibility\n        }\n    }\n});\n",
   "view": "Form"
  }
 ]
