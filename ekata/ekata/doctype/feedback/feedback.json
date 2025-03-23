@@ -8,6 +8,7 @@
  "field_order": [
   "section_break_cn88",
   "amended_from",
+  "company",
   "type",
   "opportunity",
   "customer",
@@ -80,12 +81,20 @@
    "fieldtype": "Link",
    "label": "Customer",
    "options": "Customer"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-14 18:18:51.046434",
+ "modified": "2025-03-24 01:24:49.924483",
  "modified_by": "Administrator",
  "module": "Ekata",
  "name": "Feedback",

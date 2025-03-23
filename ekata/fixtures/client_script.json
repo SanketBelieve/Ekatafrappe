@@ -163,5 +163,27 @@
   "name": "Feedback Script 2",
   "script": "frappe.ui.form.on('Feedback', {\n    refresh: function(frm) {\n        // Show \"Create Quotation\" button only if Feedback is saved (docstatus 0 or 1)\n        if (!frm.is_new()) {  \n            frm.add_custom_button(__('Create Quotation'), function() {\n                frappe.call({\n                    method: 'ekata.ekata.doctype.feedback.feedback.create_quotation_from_feedback', // Adjust path\n                    args: {\n                        feedback_name: frm.doc.name\n                    },\n                    callback: function(r) {\n                        if (r.message) {\n                            frappe.show_alert(__('Quotation Created: ' + r.message));\n                            frappe.set_route(\"Form\", \"Quotation\", r.message);\n                        }\n                    }\n                });\n            }).addClass(\"btn-success\");  // Green button for visibility\n        }\n    }\n});\n",
   "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Feedback",
+  "enabled": 1,
+  "modified": "2025-03-24 01:40:22.563181",
+  "module": "Ekata",
+  "name": "Feedback Script 3",
+  "script": "frappe.ui.form.on('Feedback', {\n    refresh: function(frm) {\n        if (frm.doc.status === \"Rejected\") {\n            frm.add_custom_button('Create Opportunity', function () {\n                frappe.call({\n                    method: 'ekata.ekata.doctype.feedback.feedback.create_opportunity_from_feedback',\n                    args: {\n                        feedback_name: frm.doc.name\n                    },\n                    callback: function (r) {\n                        if (r.message) {\n                            frappe.msgprint(__('Opportunity Created: ') + r.message);\n                            frappe.set_route('Form', 'Opportunity', r.message);\n                        }\n                    }\n                });\n            }, null);  // 💥 null puts it outside the dropdown\n        }\n    }\n});\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Opportunity",
+  "enabled": 1,
+  "modified": "2025-03-24 01:58:07.359593",
+  "module": "Ekata",
+  "name": "Opportunity Script",
+  "script": "frappe.ui.form.on('Opportunity', {\n    refresh: function(frm) {\n        // Wait a bit to let Frappe add all the buttons\n        setTimeout(() => {\n            // Hide unwanted \"Create\" menu items by label\n            $('a.dropdown-item:contains(\"Supplier Quotation\")').hide();\n            $('a.dropdown-item:contains(\"Request For Quotation\")').hide();\n            $('a.dropdown-item:contains(\"Customer\")').hide();\n\n            // Optional: if you want to be precise, only keep \"Quotation\"\n            // $('a.dropdown-item').not(':contains(\"Quotation\")').hide();\n        }, 300); // <-- allow time for menu items to render\n    }\n});\n",
+  "view": "Form"
  }
 ]
