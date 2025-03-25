@@ -24,8 +24,8 @@ def create_feedback_from_opportunity(opportunity_name):
     feedback.opportunity = opportunity.name  # Store opportunity reference
     feedback.type = opportunity.custom_opportunity_category  # Copy custom type field
     feedback.company=opportunity.company
-	# Validate if the lead exists
-	
+    # Validate if the lead exists
+    
     # Copy Items from Opportunity
     for item in opportunity.items:
         feedback.append("items", {
@@ -41,40 +41,7 @@ def create_feedback_from_opportunity(opportunity_name):
     return feedback.name  # Return the new document name
     
 
-@frappe.whitelist()
-def create_quotation_from_feedback(feedback_name):
-    """Create a Quotation from a Feedback"""
-    feedback = frappe.get_doc("Feedback", feedback_name)
 
-    # Create a new Quotation document
-    quotation = frappe.new_doc("Quotation")
-    quotation.quotation_to="Customer"
-    if feedback.customer:
-    	quotation.party_name=feedback.customer
-    company = feedback.company
-    # Get primary address
-    company_address = frappe.get_value("Dynamic Link", {
-	    "link_doctype": "Company",
-	    "link_name": company,
-	    "parenttype": "Address"
-    }, "parent")
-    # Assuming 'lead' field in Feedback maps to 'customer' in Quotation
-    #quotation.customer = feedback.customer  
-    #quotation.feedback = feedback.name  # Link to the Feedback
-
-    # Copy Items from Feedback
-    for item in feedback.items:
-        quotation.append("items", {
-            "item_code": item.item,  # Adjust field names as per your setup
-            "qty": item.qty,
-            "rate": item.rate,
-            "amount": item.qty * item.rate
-        })
-
-    quotation.total = sum([d.amount for d in quotation.items])  # Compute total
-    quotation.insert()  # Save the new document
-    frappe.msgprint(f"Quotation '{quotation.name}' Created Successfully!", alert=True)
-    return quotation.name  # Return the new document name
     
 @frappe.whitelist()
 def create_opportunity_from_feedback(feedback_name):
@@ -128,3 +95,41 @@ def create_opportunity_from_feedback(feedback_name):
     opportunity.insert()
     return opportunity.name
 
+
+
+@frappe.whitelist()
+def create_quotation_from_feedback(feedback_name):
+    """Create a Quotation from a Feedback"""
+    feedback = frappe.get_doc("Feedback", feedback_name)
+
+    # Create a new Quotation document
+    quotation = frappe.new_doc("Quotation")
+    quotation.quotation_to="Customer"
+    if feedback.customer:
+        quotation.party_name=feedback.customer
+    quotation.custom_opportunity_category=feedback.opportunity_category
+    quotation.custom_purpose=feedback.opportunity_purpose
+    company = feedback.company
+    # Get primary address
+    company_address = frappe.get_value("Dynamic Link", {
+        "link_doctype": "Company",
+        "link_name": company,
+        "parenttype": "Address"
+    }, "parent")
+    # Assuming 'lead' field in Feedback maps to 'customer' in Quotation
+    #quotation.customer = feedback.customer  
+    #quotation.feedback = feedback.name  # Link to the Feedback
+
+    # Copy Items from Feedback
+    for item in feedback.items:
+        quotation.append("items", {
+            "item_code": item.item,  # Adjust field names as per your setup
+            "qty": item.qty,
+            "rate": item.rate,
+            "amount": item.qty * item.rate
+        })
+
+    quotation.total = sum([d.amount for d in quotation.items])  # Compute total
+    quotation.insert()  # Save the new document
+    frappe.msgprint(f"Quotation '{quotation.name}' Created Successfully!", alert=True)
+    return quotation.name  # Return the new document name

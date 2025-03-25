@@ -10,9 +10,15 @@
   "amended_from",
   "company",
   "type",
-  "opportunity",
-  "customer",
   "lead",
+  "opportunity",
+  "opportunity_category",
+  "opportunity_purpose",
+  "customer",
+  "city",
+  "state",
+  "country",
+  "territory",
   "status",
   "items",
   "total_amount",
@@ -89,12 +95,52 @@
    "label": "Company",
    "options": "Company",
    "reqd": 1
+  },
+  {
+   "fetch_from": "opportunity.purpose",
+   "fieldname": "opportunity_purpose",
+   "fieldtype": "Select",
+   "label": "Opportunity Purpose",
+   "options": "\nSample\nShipment"
+  },
+  {
+   "fetch_from": "opportunity.custom_opportunity_category",
+   "fieldname": "opportunity_category",
+   "fieldtype": "Select",
+   "label": "Opportunity Category",
+   "options": "\nB2C\nB2B\nOther"
+  },
+  {
+   "fetch_from": "opportunity.city",
+   "fieldname": "city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "fetch_from": "opportunity.state",
+   "fieldname": "state",
+   "fieldtype": "Data",
+   "label": "State"
+  },
+  {
+   "fetch_from": "opportunity.country",
+   "fieldname": "country",
+   "fieldtype": "Link",
+   "label": "Country",
+   "options": "Country"
+  },
+  {
+   "fetch_from": "opportunity.territory",
+   "fieldname": "territory",
+   "fieldtype": "Link",
+   "label": "Territory",
+   "options": "Territory"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-24 01:24:49.924483",
+ "modified": "2025-03-25 17:38:13.704500",
  "modified_by": "Administrator",
  "module": "Ekata",
  "name": "Feedback",

@@ -204,7 +204,8 @@ doc_events = {
         		"before_save": "ekata.ekata.custom_scripts.delivery_note.delivery_note.before_save_delivery_note"
     	},
 	"Sales Order" : {
-		"validate":"ekata.ekata.custom_scripts.sales_order.sales_order.validate"
+		"validate":"ekata.ekata.custom_scripts.sales_order.sales_order.validate",
+        "after_insert":"ekata.ekata.custom_scripts.sales_order.sales_order.after_insert"
 	},
 	"Supplier Quotation" : {
 		"validate":"ekata.ekata.custom_scripts.supplier_quotation.supplier_quotation.validate"
@@ -219,6 +220,12 @@ doc_events = {
 	"Stock Ledger Entry" : {
 		"validate":"ekata.ekata.custom_scripts.stock_ledger_entry.stock_ledger_entry_py.validate"
 	},
+	"Opportunity" : {
+		"after_insert":"ekata.ekata.custom_scripts.opportunity.opportunity.validate"
+	},
+    "Quotation": {
+		"after_insert": "ekata.ekata.custom_scripts.quotation.quotation.after_insert"
+	}
 }
 
 # Scheduled Tasks
