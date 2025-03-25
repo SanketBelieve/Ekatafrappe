@@ -11,6 +11,8 @@
   "company",
   "type",
   "lead",
+  "contact_email",
+  "contact_phone",
   "opportunity",
   "opportunity_category",
   "opportunity_purpose",
@@ -97,18 +99,22 @@
    "reqd": 1
   },
   {
+   "bold": 1,
    "fetch_from": "opportunity.purpose",
    "fieldname": "opportunity_purpose",
    "fieldtype": "Select",
    "label": "Opportunity Purpose",
-   "options": "\nSample\nShipment"
+   "options": "\nSample\nShipment",
+   "read_only": 1
   },
   {
+   "bold": 1,
    "fetch_from": "opportunity.custom_opportunity_category",
    "fieldname": "opportunity_category",
    "fieldtype": "Select",
    "label": "Opportunity Category",
-   "options": "\nB2C\nB2B\nOther"
+   "options": "\nB2C\nB2B\nOther",
+   "read_only": 1
   },
   {
    "fetch_from": "opportunity.city",
@@ -135,12 +141,26 @@
    "fieldtype": "Link",
    "label": "Territory",
    "options": "Territory"
+  },
+  {
+   "bold": 1,
+   "fetch_from": "opportunity.contact_email",
+   "fieldname": "contact_email",
+   "fieldtype": "Data",
+   "label": "Contact Email"
+  },
+  {
+   "bold": 1,
+   "fetch_from": "opportunity.contact_mobile",
+   "fieldname": "contact_phone",
+   "fieldtype": "Data",
+   "label": "Contact Phone"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-25 17:38:13.704500",
+ "modified": "2025-03-25 22:25:44.242449",
  "modified_by": "Administrator",
  "module": "Ekata",
  "name": "Feedback",
