@@ -16,6 +16,7 @@
   "opportunity",
   "opportunity_category",
   "opportunity_purpose",
+  "lead_type",
   "customer",
   "city",
   "state",
@@ -155,12 +156,19 @@
    "fieldname": "contact_phone",
    "fieldtype": "Data",
    "label": "Contact Phone"
+  },
+  {
+   "fetch_from": "lead.type",
+   "fieldname": "lead_type",
+   "fieldtype": "Data",
+   "label": "Lead Type",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-25 22:25:44.242449",
+ "modified": "2025-03-26 11:59:24.360353",
  "modified_by": "Administrator",
  "module": "Ekata",
  "name": "Feedback",

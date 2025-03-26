@@ -15,6 +15,7 @@ def after_insert(doc, method):
         return
 
     quotation_name = doc.items[0].prevdoc_docname
+    
     if not quotation_name:
         return
 
@@ -22,5 +23,7 @@ def after_insert(doc, method):
 
     doc.custom_opportunity_category = quotation.custom_opportunity_category
     doc.custom_opportunity_purpose = quotation.custom_purpose
+    doc.custom_lead_type = quotation.custom_lead_type
+
 
     doc.save(ignore_permissions=True)

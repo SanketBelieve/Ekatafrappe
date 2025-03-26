@@ -109,6 +109,7 @@ def create_quotation_from_feedback(feedback_name):
         quotation.party_name=feedback.customer
     quotation.custom_opportunity_category=feedback.opportunity_category
     quotation.custom_purpose=feedback.opportunity_purpose
+    quotation.custom_lead_type=feedback.lead_type
     company = feedback.company
     # Get primary address
     company_address = frappe.get_value("Dynamic Link", {
