@@ -58,6 +58,8 @@ def create_opportunity_from_feedback(feedback_name):
     opportunity.opportunity_from = "Lead"
     opportunity.lead = feedback.lead
     opportunity.enquiry_type = "Sales"
+    opportunity.custom_opportunity_category = feedback.opportunity_category
+    opportunity.purpose = feedback.opportunity_purpose
     opportunity.transaction_date = frappe.utils.nowdate()
 
     # ✅ Manually fetch & assign party_name
