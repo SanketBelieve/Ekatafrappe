@@ -201,7 +201,8 @@ doc_events = {
 		"validate":"ekata.ekata.custom_scripts.quotation.quotation.validate"
 	},
 	"Delivery Note": {
-        		"before_save": "ekata.ekata.custom_scripts.delivery_note.delivery_note.before_save_delivery_note"
+        		"before_save": "ekata.ekata.custom_scripts.delivery_note.delivery_note.before_save_delivery_note",
+                "submit": "ekata.ekata.custom_scripts.delivery_note.delivery_note.create_delivery_note"
     	},
 	"Sales Order" : {
 		"validate":"ekata.ekata.custom_scripts.sales_order.sales_order.validate",

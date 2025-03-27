@@ -1,6 +1,7 @@
 import frappe
 import math
 
+from erpnext.selling.doctype.sales_order.sales_order import make_delivery_note
 def before_save_delivery_note(doc, method):
     """
     Before saving the Delivery Note:
@@ -87,3 +88,23 @@ def before_save_delivery_note(doc, method):
     for item in new_items:
         doc.append("items", item)
 
+
+
+
+
+def create_delivery_note(doc, method):
+    # Check if shopify_order_id is not None
+    if doc.shopify_order_id:
+        # Create Delivery Note from Sales Order
+        dn_doc = make_delivery_note(doc.name)
+        
+        # If needed, modify the Delivery Note before inserting
+        dn_doc.set_posting_time = 1
+        dn_doc.posting_date = frappe.utils.today()
+        
+        # Insert and submit the Delivery Note
+        dn_doc.insert(ignore_permissions=True)
+        dn_doc.submit()
+
+        # Show a message after successful creation
+        frappe.msgprint(f"Delivery Note {dn_doc.name} created successfully for Shopify Order {doc.shopify_order_id}.")
