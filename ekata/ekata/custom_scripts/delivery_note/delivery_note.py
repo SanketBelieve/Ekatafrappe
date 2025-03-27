@@ -104,7 +104,6 @@ def create_delivery_note(doc, method):
         
         # Insert and submit the Delivery Note
         dn_doc.insert(ignore_permissions=True)
-        dn_doc.submit()
 
         # Show a message after successful creation
         frappe.msgprint(f"Delivery Note {dn_doc.name} created successfully for Shopify Order {doc.shopify_order_id}.")
