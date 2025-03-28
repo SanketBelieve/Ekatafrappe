@@ -92,18 +92,32 @@ def before_save_delivery_note(doc, method):
 
 
 
+
 def create_delivery_note(doc, method):
     # Check if shopify_order_id is not None
     if doc.shopify_order_id:
         # Create Delivery Note from Sales Order
         dn_doc = make_delivery_note(doc.name)
         
-        # If needed, modify the Delivery Note before inserting
-        dn_doc.set_posting_time = 1
-        dn_doc.posting_date = frappe.utils.today()
+        # Fetch the first branch from the Branch doctype
+        branch_name = frappe.get_all(
+            "Branch", 
+            fields=["name"], 
+            limit_page_length=1, 
+            order_by="creation ASC"
+        )
         
-        # Insert and submit the Delivery Note
-        dn_doc.insert(ignore_permissions=True)
+        # If branch is found, set it and save the Delivery Note
+        if branch_name:
+            dn_doc.branch = branch_name[0].get("name")
+            
+            # Set posting time and date
+            dn_doc.set_posting_time = 1
+            dn_doc.posting_date = frappe.utils.today()
+            
+            # Insert and submit the Delivery Note
+            dn_doc.insert(ignore_permissions=True)
+            dn_doc.submit()
+        else:
+            frappe.throw("No branch found. Delivery Note not created.")
 
-        # Show a message after successful creation
-        frappe.msgprint(f"Delivery Note {dn_doc.name} created successfully for Shopify Order {doc.shopify_order_id}.")
