@@ -8,6 +8,7 @@
  "field_order": [
   "item",
   "qty",
+  "uom",
   "ratio"
  ],
  "fields": [
@@ -32,12 +33,19 @@
    "fieldtype": "Float",
    "label": "Ratio ",
    "read_only": 1
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "UOM",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-03-14 20:14:24.314725",
+ "modified": "2025-03-28 15:56:33.145843",
  "modified_by": "Administrator",
  "module": "Ekata",
  "name": "Item Composition Table",
