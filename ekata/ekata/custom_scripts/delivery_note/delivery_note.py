@@ -119,4 +119,34 @@ def create_delivery_note(doc, method):
             dn_doc.insert(ignore_permissions=True)
         else:
             frappe.throw("No branch found. Delivery Note not created.")
+            
+            
+def apply_composition_items(dn_doc,method):
+    # Loop through items in the Delivery Note to process composition
+    for item in dn_doc.items:
+        # Fetch the composition of the item if it exists
+        compositions = frappe.get_all(
+            "Composition of Items",
+            filters={"item": item.item_code},
+            fields=["item_qty", "name"]
+        )
+        
+        for composition in compositions:
+            # Fetch child items from the composition table
+            composition_doc = frappe.get_doc("Composition of Items", composition.name)
+            
+            for child in composition_doc.composition:
+                # Calculate the quantity based on ratio and original item quantity
+                ratio_qty = (child.ratio / 100) * item.qty
+                
+                # Append the child item to Delivery Note with the calculated ratio quantity
+                dn_doc.append("items", {
+                    "item_code": child.item,
+                    "qty": ratio_qty,
+                    "uom": child.uom,
+                    "conversion_factor": 1,
+                    "warehouse": item.warehouse,
+                    "description": f"Added from composition of {item.item_code}"
+                })
+
 

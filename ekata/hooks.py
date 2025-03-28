@@ -191,41 +191,39 @@ override_doctype_class = {
 #	}
 # }
 doc_events = {
-	"Sales Invoice" : {
-		"validate":"ekata.ekata.custom_scripts.sales_invoice.sales_invoice.validate"
+	"Sales Invoice": {
+		"validate": "ekata.ekata.custom_scripts.sales_invoice.sales_invoice.validate"
 	},
-	"Purchase Order" : {
-		"validate":"ekata.ekata.custom_scripts.purchase_order.purchase_order.validate"
+	"Purchase Order": {
+		"validate": "ekata.ekata.custom_scripts.purchase_order.purchase_order.validate"
 	},
-	"Quotation" : {
-		"validate":"ekata.ekata.custom_scripts.quotation.quotation.validate"
-	},
-	# "Delivery Note": {
-    #     		"before_save": "ekata.ekata.custom_scripts.delivery_note.delivery_note.before_save_delivery_note"
-    # 	},
-	"Sales Order" : {
-		"validate":"ekata.ekata.custom_scripts.sales_order.sales_order.validate",
-        	"after_insert":"ekata.ekata.custom_scripts.sales_order.sales_order.after_insert",
-        	 "on_submit": "ekata.ekata.custom_scripts.delivery_note.delivery_note.create_delivery_note"
-	},
-	"Supplier Quotation" : {
-		"validate":"ekata.ekata.custom_scripts.supplier_quotation.supplier_quotation.validate"
-	},
-	"Stock Entry" : {
-		"on_submit":"ekata.ekata.custom_scripts.stock_entry.stock_entry.on_submit",
-		"validate":"ekata.ekata.custom_scripts.stock_entry.stock_entry.validate"
-	},
-	"Material Request" : {
-		"validate":"ekata.ekata.custom_scripts.material_request.material_request.validate"
-	},
-	"Stock Ledger Entry" : {
-		"validate":"ekata.ekata.custom_scripts.stock_ledger_entry.stock_ledger_entry_py.validate"
-	},
-	"Opportunity" : {
-		"after_insert":"ekata.ekata.custom_scripts.opportunity.opportunity.validate"
-	},
-    "Quotation": {
+	"Quotation": {
+		"validate": "ekata.ekata.custom_scripts.quotation.quotation.validate",
 		"after_insert": "ekata.ekata.custom_scripts.quotation.quotation.after_insert"
+	},
+	"Delivery Note": {
+		"after_insert": "ekata.ekata.custom_scripts.delivery_note.delivery_note.apply_composition_items"
+	},
+	"Sales Order": {
+		"validate": "ekata.ekata.custom_scripts.sales_order.sales_order.validate",
+		"after_insert": "ekata.ekata.custom_scripts.sales_order.sales_order.after_insert",
+		"on_submit": "ekata.ekata.custom_scripts.delivery_note.delivery_note.create_delivery_note"
+	},
+	"Supplier Quotation": {
+		"validate": "ekata.ekata.custom_scripts.supplier_quotation.supplier_quotation.validate"
+	},
+	"Stock Entry": {
+		"on_submit": "ekata.ekata.custom_scripts.stock_entry.stock_entry.on_submit",
+		"validate": "ekata.ekata.custom_scripts.stock_entry.stock_entry.validate"
+	},
+	"Material Request": {
+		"validate": "ekata.ekata.custom_scripts.material_request.material_request.validate"
+	},
+	"Stock Ledger Entry": {
+		"validate": "ekata.ekata.custom_scripts.stock_ledger_entry.stock_ledger_entry_py.validate"
+	},
+	"Opportunity": {
+		"after_insert": "ekata.ekata.custom_scripts.opportunity.opportunity.validate"
 	}
 }
 
