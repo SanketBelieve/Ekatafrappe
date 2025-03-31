@@ -51,7 +51,7 @@ def create_and_process_delivery_note(doc, method):
 
                     for child in composition_doc.composition:
                         # Calculate the quantity based on item_qty per unit and original item quantity
-                        total_qty = child.item_qty * item.qty
+                        total_qty = child.qty * item.qty
 
                         # Append the child item to Delivery Note with the calculated total quantity
                         dn_doc.append(
@@ -96,7 +96,7 @@ def apply_composition_items_only(dn_doc):
 
             for child in composition_doc.composition:
                 # Calculate the quantity based on item_qty per unit and original item quantity
-                total_qty = child.item_qty * item.qty
+                total_qty = child.qty * item.qty
 
                 # Append the child item to Delivery Note with the calculated total quantity
                 dn_doc.append(
