@@ -106,7 +106,7 @@ def create_delivery_note(doc, method):
             limit_page_length=1, 
             order_by="creation ASC"
         )
-        dn_doc.custom_delivery_note_type="Blending"
+        dn_doc.custom_delivery_note_category="Blending"
         # If branch is found, set it and save the Delivery Note
         if branch_name:
             dn_doc.branch = branch_name[0].get("name")
@@ -123,6 +123,8 @@ def create_delivery_note(doc, method):
             
 def apply_composition_items(dn_doc,method):
     # Loop through items in the Delivery Note to process composition
+    if dn_doc.custom_delivery_note_category != "Blending":
+        return
     for item in dn_doc.items:
         # Fetch the composition of the item if it exists
         compositions = frappe.get_all(
