@@ -73,7 +73,7 @@ def create_and_process_delivery_note(doc, method):
 
 
 
-def apply_composition_items_only(dn_doc):
+def apply_composition_items_only(dn_doc,method):
     """
     Apply item compositions to an existing Delivery Note without creating a new one.
     """
