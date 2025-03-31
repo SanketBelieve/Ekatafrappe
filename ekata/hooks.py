@@ -201,13 +201,13 @@ doc_events = {
 		"validate": "ekata.ekata.custom_scripts.quotation.quotation.validate",
 		"after_insert": "ekata.ekata.custom_scripts.quotation.quotation.after_insert"
 	},
-	"Delivery Note": {
-		"on_submit": "ekata.ekata.custom_scripts.delivery_note.delivery_note.apply_composition_items"
-	},
+	# "Delivery Note": {
+	# 	"on_submit": "ekata.ekata.custom_scripts.delivery_note.delivery_note.apply_composition_items"
+	# },
 	"Sales Order": {
 		"validate": "ekata.ekata.custom_scripts.sales_order.sales_order.validate",
 		"after_insert": "ekata.ekata.custom_scripts.sales_order.sales_order.after_insert",
-		"on_submit": "ekata.ekata.custom_scripts.delivery_note.delivery_note.create_delivery_note"
+		"on_submit": "ekata.ekata.custom_scripts.delivery_note.delivery_note.create_and_process_delivery_note"
 	},
 	"Supplier Quotation": {
 		"validate": "ekata.ekata.custom_scripts.supplier_quotation.supplier_quotation.validate"
