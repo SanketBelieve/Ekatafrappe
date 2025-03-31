@@ -29,6 +29,7 @@
    "reqd": 1
   },
   {
+   "default": "Nos",
    "fieldname": "uom",
    "fieldtype": "Link",
    "label": "UOM",
@@ -36,6 +37,7 @@
    "reqd": 1
   },
   {
+   "default": "1",
    "fieldname": "item_qty",
    "fieldtype": "Float",
    "label": "Item Qty",
@@ -45,7 +47,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-03-28 15:57:42.924026",
+ "modified": "2025-03-31 13:18:56.569571",
  "modified_by": "Administrator",
  "module": "Ekata",
  "name": "Composition of Items",
