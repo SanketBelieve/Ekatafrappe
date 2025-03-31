@@ -106,7 +106,7 @@ def create_delivery_note(doc, method):
             limit_page_length=1, 
             order_by="creation ASC"
         )
-        dn_doc.doc.custom_delivery_note_type="Blending"
+        dn_doc.custom_delivery_note_type="Blending"
         # If branch is found, set it and save the Delivery Note
         if branch_name:
             dn_doc.branch = branch_name[0].get("name")
