@@ -27,3 +27,5 @@ def after_insert(doc, method):
 
 
     doc.save(ignore_permissions=True)
+
+    
