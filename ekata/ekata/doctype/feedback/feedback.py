@@ -12,34 +12,65 @@ class Feedback(Document):
         
         self.total_amount = total_amount  # Update total amount in the main doc
 
+
 @frappe.whitelist()
 def create_feedback_from_opportunity(opportunity_name):
-    """Create a Feedback record from an Opportunity"""
+    """Create a Feedback record from an Opportunity and copy the Lead’s linked address."""
     opportunity = frappe.get_doc("Opportunity", opportunity_name)
 
-    # Create a new Feedback document
+    # ------------------------------------------------------------------
+    # 1.  New Feedback shell
+    # ------------------------------------------------------------------
     feedback = frappe.new_doc("Feedback")
-    if frappe.db.exists("Lead", opportunity.party_name): 
-         feedback.lead = opportunity.party_name  # Copy party_name to lead field
-    feedback.opportunity = opportunity.name  # Store opportunity reference
-    feedback.type = opportunity.custom_opportunity_category  # Copy custom type field
-    feedback.company=opportunity.company
-    # Validate if the lead exists
-    
-    # Copy Items from Opportunity
-    for item in opportunity.items:
-        feedback.append("items", {
-            "item": item.item_code,  # Assuming 'item' is the field name
-            "qty": item.qty,
-            "rate": item.base_rate,
-            "amount": item.qty * item.rate  # Compute amount here too
-        })
+    feedback.opportunity = opportunity.name
+    feedback.type        = opportunity.custom_opportunity_category
+    feedback.company     = opportunity.company
 
-    feedback.total_amount = sum([d.amount for d in feedback.items])  # Compute total
-    feedback.insert()  # Save the new document
-    frappe.msgprint(f"Feedback '{feedback.name}' Created Successfully!", alert=True)
-    return feedback.name  # Return the new document name
-    
+    # ------------------------------------------------------------------
+    # 2.  Lead + Address (no more get_default_address)
+    # ------------------------------------------------------------------
+    if frappe.db.exists("Lead", opportunity.party_name):
+        feedback.lead = opportunity.party_name,opportunity.party_name
+        lead_entity=frappe.get_doc("Lead",opportunity.party_name)
+        # Grab the FIRST Address linked to this Lead via Dynamic Link
+        address_name = frappe.db.get_value(
+            "Dynamic Link",
+            {
+                "link_doctype": "Lead",
+                "link_name": opportunity.party_name,
+                "parenttype": "Address",
+            },
+            "parent",
+            order_by="idx asc"   # pick the one that shows up first in the UI
+        )
+        print("address_name",address_name,"\n\n\n\n")
+        if address_name:
+            addr = frappe.get_doc("Address", address_name)
+            feedback.city         = lead_entity.city
+            feedback.state        = lead_entity.state
+            feedback.country      = lead_entity.country
+            feedback.lead_address = addr
+            feedback.pin_code=addr.pincode
+
+    # ------------------------------------------------------------------
+    # 3.  Items
+    # ------------------------------------------------------------------
+    for item in opportunity.items:
+        feedback.append(
+            "items",
+            {
+                "item": item.item_code,
+                "qty": item.qty,
+                "rate": item.base_rate,
+                "amount": item.qty * item.base_rate,
+            },
+        )
+
+    feedback.total_amount = sum(d.amount for d in feedback.items)
+    feedback.insert(ignore_permissions=True)
+
+    frappe.msgprint(f"Feedback created successfully! 🎉",alert=True)
+    return feedback.name
 
 
     

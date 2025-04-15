@@ -191,10 +191,21 @@
   "doctype": "Client Script",
   "dt": "Opportunity",
   "enabled": 1,
-  "modified": "2025-03-25 17:14:40.616666",
+  "modified": "2025-04-14 18:53:08.095412",
   "module": "Ekata",
   "name": "Opportunity Script",
-  "script": "frappe.ui.form.on('Opportunity', {\n    refresh: function(frm) {\n        // Give time for Frappe to render all buttons and menu items\n        setTimeout(() => {\n            if (frm.doc.custom_lead_type === 'Roasted coffee lead') {\n              // 🛑 Hide the entire \"Create\" button group\n                 $('a.dropdown-item:contains(\"Supplier Quotation\")').hide();\n                $('a.dropdown-item:contains(\"Request For Quotation\")').hide();\n                $('a.dropdown-item:contains(\"Customer\")').hide();\n                $('a.dropdown-item:contains(\"Quotation\")').hide();\n            \n                \n\n                // Optional: show a little toast\n                frappe.show_alert(\"Create options are disabled for Roasted Coffee Leads ☕\", 5);\n            } else {\n                // ✅ Hide specific unwanted Create menu options\n                $('a.dropdown-item:contains(\"Supplier Quotation\")').hide();\n                $('a.dropdown-item:contains(\"Request For Quotation\")').hide();\n                $('a.dropdown-item:contains(\"Customer\")').hide();\n            }\n        }, 300); // Allow time for Frappe to render menu items\n    }\n});\n",
+  "script": "frappe.ui.form.on('Opportunity', {\n    refresh: function(frm) {\n        // Give time for Frappe to render all buttons and menu items\n        setTimeout(() => {\n            if (frm.doc.custom_lead_type === 'Roasted coffee lead') {\n                // 🛑 Hide full Create options\n                $('a.dropdown-item:contains(\"Supplier Quotation\")').hide();\n                $('a.dropdown-item:contains(\"Request For Quotation\")').hide();\n                $('a.dropdown-item:contains(\"Customer\")').hide();\n                $('a.dropdown-item:contains(\"Quotation\")').hide();\n\n                // Optional: Toast to inform\n                frappe.show_alert(\"Create options are disabled for Roasted Coffee Leads ☕\", 5);\n            } else {\n                // ✅ Hide partial Create menu options\n                $('a.dropdown-item:contains(\"Supplier Quotation\")').hide();\n                $('a.dropdown-item:contains(\"Request For Quotation\")').hide();\n                $('a.dropdown-item:contains(\"Customer\")').hide();\n            }\n        }, 300); // Give Frappe time to load buttons\n\n        // 🚫 Hide status field for non-System Managers\n        if (!frappe.user.has_role(\"System Manager\")) {\n            frm.set_df_property('status', 'hidden', 1);\n        }\n    }\n});\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Quotation",
+  "enabled": 1,
+  "modified": "2025-04-14 19:25:48.639541",
+  "module": "Ekata",
+  "name": "Quotation Script",
+  "script": "frappe.ui.form.on('Quotation', {\n    before_submit: function(frm) {\n        frappe.call({\n            method: \"frappe.client.get_attachments\",\n            args: {\n                doctype: frm.doctype,\n                name: frm.docname\n            },\n            callback: function(r) {\n                const attachments = r.message || [];\n\n                if (attachments.length === 0) {\n                    frappe.throw(\"📎 Please attach at least one file before submitting the Quotation.\");\n                }\n            },\n            async: false  // make sure the check completes before submission\n        });\n    }\n});\n",
   "view": "Form"
  }
 ]

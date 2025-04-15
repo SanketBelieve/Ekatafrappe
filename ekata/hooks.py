@@ -214,7 +214,8 @@ doc_events = {
 	},
 	"Stock Entry": {
 		"on_submit": "ekata.ekata.custom_scripts.stock_entry.stock_entry.on_submit",
-		"validate": "ekata.ekata.custom_scripts.stock_entry.stock_entry.validate"
+        	"validate": "ekata.ekata.custom_scripts.stock_entry.stock_entry.validate",
+        	"after_insert": "ekata.ekata.custom_scripts.stock_entry.stock_entry.apply_composition_items_to_stock_entry"
 	},
 	"Material Request": {
 		"validate": "ekata.ekata.custom_scripts.material_request.material_request.validate"

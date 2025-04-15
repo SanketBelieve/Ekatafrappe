@@ -18,8 +18,10 @@
   "opportunity_purpose",
   "lead_type",
   "customer",
+  "lead_address",
   "city",
   "state",
+  "pin_code",
   "country",
   "territory",
   "status",
@@ -163,12 +165,24 @@
    "fieldtype": "Data",
    "label": "Lead Type",
    "read_only": 1
+  },
+  {
+   "fieldname": "lead_address",
+   "fieldtype": "Link",
+   "label": "Lead Address",
+   "options": "Address",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pin_code",
+   "fieldtype": "Data",
+   "label": "Pin Code"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-03-26 11:59:24.360353",
+ "modified": "2025-04-14 17:41:18.893942",
  "modified_by": "Administrator",
  "module": "Ekata",
  "name": "Feedback",
