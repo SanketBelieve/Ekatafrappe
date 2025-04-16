@@ -6,19 +6,10 @@ def on_submit(doc,method=None):
         frappe.db.set_value('Stock Ledger Entry',{'voucher_no':doc.name,'item_code':item.item_code},'supplier',item.supplier)
 
 def validate(doc, method=None):
-    print('\n\n--------------apply loss and set basic rate--------------\n\n')
+    
 
     # 🥇 First: Adjust qty based on loss
-    for i in doc.items:
-        if i.custom_loss and i.custom_loss > 0:
-            # Store original quantity
-            i.custom_qty_before_loss = i.qty
-
-            # Apply loss (e.g., 5 means 5% loss)
-            loss_factor = 1 - (i.custom_loss / 100)
-            i.qty = round(i.qty * loss_factor, 4)
-            i.transfer_qty = i.qty  # Optional: sync transfer_qty
-            print(f"Applied loss on {i.item_code}: Original {i.custom_qty_before_loss} → New {i.qty}")
+    
 
     # 🥈 Second: Apply basic rate logic for Repack and Bulking
     if doc.stock_entry_type in ['Repack', 'Bulking']:
@@ -88,12 +79,30 @@ def create_repack_entry(source_name, target_doc=None):
 
 
 def apply_composition_items_to_stock_entry(doc, method):
-    if doc.stock_entry_type != "Material Issue" or not doc.custom_cropster_entry:
+    if doc.stock_entry_type != "Cropster":
         return
 
-    original_items = list(doc.items)
+    raw_warehouse = doc.get("custom_cropster_raw_material_warehouse")
+    if not raw_warehouse:
+        frappe.msgprint("⚠️ No Raw Material Warehouse specified for Cropster entry.")
+        return
 
-    for item in original_items:
+    # ✅ Create Material Issue Entry for Composition Deduction
+    material_issue_entry = frappe.new_doc("Stock Entry")
+    material_issue_entry.stock_entry_type = "Material Issue"
+    material_issue_entry.purpose = "Material Issue"
+    material_issue_entry.company = doc.company
+    material_issue_entry.custom_cropster_entry = 1
+    material_issue_entry.posting_date = doc.posting_date
+    material_issue_entry.posting_time = doc.posting_time
+    material_issue_entry.set_posting_time = 1
+    material_issue_entry.remarks = f"Auto-created to deduct raw materials for Cropster entry {doc.name}"
+    material_issue_entry.reference_doctype = "Stock Entry"
+    material_issue_entry.reference_name = doc.name
+
+    has_items = False
+
+    for item in doc.items:
         compositions = frappe.get_all(
             "Composition of Items",
             filters={"item": item.item_code},
@@ -106,14 +115,21 @@ def apply_composition_items_to_stock_entry(doc, method):
             for child in comp_doc.composition:
                 total_qty = child.qty * item.qty
 
-                doc.append(
-                    "items",
-                    {
-                        "item_code": child.item,
-                        "qty": total_qty,
-                        "uom": child.uom,
-                        "s_warehouse": item.s_warehouse
-                    },
-                )
+                material_issue_entry.append("items", {
+                    "item_code": child.item,
+                    "qty": total_qty,
+                    "uom": child.uom,
+                    "stock_uom": child.uom,
+                    "conversion_factor": 1,
+                    "s_warehouse": raw_warehouse
+                })
 
-    doc.save()
+                has_items = True
+
+    if has_items:
+        material_issue_entry.save()
+        # Optional: material_issue_entry.submit()
+        frappe.msgprint(f'✅ <a href="/app/stock-entry/{material_issue_entry.name}" target="_blank">View Material Issue: <b>{material_issue_entry.name}</b></a>')
+    else:
+        frappe.msgprint("ℹ️ No composition items found to deduct.")
+

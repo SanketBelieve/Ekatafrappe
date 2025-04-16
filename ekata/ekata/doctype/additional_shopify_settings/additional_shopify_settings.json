@@ -1,0 +1,69 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-04-16 11:04:07.750351",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "sales_order_cost_center",
+  "income_account",
+  "paid_from_account",
+  "sales_invoice_debit_to"
+ ],
+ "fields": [
+  {
+   "fieldname": "sales_order_cost_center",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Cost Center",
+   "options": "Cost Center",
+   "reqd": 1
+  },
+  {
+   "fieldname": "income_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Income Account",
+   "options": "Account",
+   "reqd": 1
+  },
+  {
+   "fieldname": "paid_from_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Paid From Account",
+   "options": "Account",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sales_invoice_debit_to",
+   "fieldtype": "Link",
+   "label": "Sales Invoice Debit To",
+   "options": "Account",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-04-16 12:46:36.995913",
+ "modified_by": "Administrator",
+ "module": "Ekata",
+ "name": "Additional Shopify Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

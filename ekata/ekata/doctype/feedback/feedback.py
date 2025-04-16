@@ -25,13 +25,13 @@ def create_feedback_from_opportunity(opportunity_name):
     feedback.opportunity = opportunity.name
     feedback.type        = opportunity.custom_opportunity_category
     feedback.company     = opportunity.company
-
     # ------------------------------------------------------------------
     # 2.  Lead + Address (no more get_default_address)
     # ------------------------------------------------------------------
     if frappe.db.exists("Lead", opportunity.party_name):
         feedback.lead = opportunity.party_name,opportunity.party_name
         lead_entity=frappe.get_doc("Lead",opportunity.party_name)
+        feedback.lead_purpose=lead_entity.custom_purpose
         # Grab the FIRST Address linked to this Lead via Dynamic Link
         address_name = frappe.db.get_value(
             "Dynamic Link",
@@ -68,7 +68,7 @@ def create_feedback_from_opportunity(opportunity_name):
 
     feedback.total_amount = sum(d.amount for d in feedback.items)
     feedback.insert(ignore_permissions=True)
-
+	
     frappe.msgprint(f"Feedback created successfully! 🎉",alert=True)
     return feedback.name
 
@@ -98,6 +98,8 @@ def create_opportunity_from_feedback(feedback_name):
     opportunity.party_name = lead_name
     opportunity.contact_email=feedback.contact_email
     opportunity.contact_mobile=feedback.contact_phone
+    opportunity.purpose=feedback.lead_purpose
+    opportunity.opportunity_owner=frappe.session.user
 
     # Company setup
     opportunity.company = feedback.company or frappe.defaults.get_user_default("Company")

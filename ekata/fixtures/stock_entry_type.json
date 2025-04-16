@@ -1,0 +1,11 @@
+[
+ {
+  "add_to_transit": 0,
+  "docstatus": 0,
+  "doctype": "Stock Entry Type",
+  "is_standard": 0,
+  "modified": "2025-04-16 13:43:38.618234",
+  "name": "Cropster",
+  "purpose": "Material Issue"
+ }
+]

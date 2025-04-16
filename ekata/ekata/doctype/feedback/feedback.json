@@ -11,6 +11,7 @@
   "company",
   "type",
   "lead",
+  "lead_purpose",
   "contact_email",
   "contact_phone",
   "opportunity",
@@ -177,12 +178,17 @@
    "fieldname": "pin_code",
    "fieldtype": "Data",
    "label": "Pin Code"
+  },
+  {
+   "fieldname": "lead_purpose",
+   "fieldtype": "Data",
+   "label": "Lead Purpose"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-04-14 17:41:18.893942",
+ "modified": "2025-04-16 10:55:16.888929",
  "modified_by": "Administrator",
  "module": "Ekata",
  "name": "Feedback",

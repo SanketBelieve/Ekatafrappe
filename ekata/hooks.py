@@ -121,7 +121,6 @@ fixtures = [
 	# 'Designation'
 ]
 
-
 fixtures = [
     {
         "dt": "Custom Field",
@@ -158,7 +157,7 @@ fixtures = [
                 "is_system_generated", "=", 0
             ]
         ]
-	},
+    },
     {
         "dt": "Notification",
         "filters": [
@@ -167,7 +166,16 @@ fixtures = [
             ]
         ]
     },
+    {
+        "dt": "Stock Entry Type",
+        "filters": [
+            [
+                "name", "=", "Cropster"
+            ]
+        ]
+    }
 ]
+
 # DocType Class
 # ---------------
 # Override standard doctype classes
@@ -192,7 +200,8 @@ override_doctype_class = {
 # }
 doc_events = {
 	"Sales Invoice": {
-		"validate": "ekata.ekata.custom_scripts.sales_invoice.sales_invoice.validate"
+		"validate": "ekata.ekata.custom_scripts.sales_invoice.sales_invoice.validate",
+		"after_insert":"ekata.ekata.custom_scripts.shopify.shopify_settings.handle_sales_invoice"
 	},
 	"Purchase Order": {
 		"validate": "ekata.ekata.custom_scripts.purchase_order.purchase_order.validate"
@@ -206,7 +215,7 @@ doc_events = {
 	},
 	"Sales Order": {
 		"validate": "ekata.ekata.custom_scripts.sales_order.sales_order.validate",
-		"after_insert": "ekata.ekata.custom_scripts.sales_order.sales_order.after_insert",
+		"after_insert": ["ekata.ekata.custom_scripts.sales_order.sales_order.after_insert","ekata.ekata.custom_scripts.shopify.shopify_settings.handle_sales_order"],
 		"on_submit": "ekata.ekata.custom_scripts.delivery_note.delivery_note.create_and_process_delivery_note"
 	},
 	"Supplier Quotation": {
@@ -225,6 +234,9 @@ doc_events = {
 	},
 	"Opportunity": {
 		"after_insert": "ekata.ekata.custom_scripts.opportunity.opportunity.validate"
+	},
+	"Payment Entry":{
+		"after_insert": "ekata.ekata.custom_scripts.shopify.shopify_settings.handle_payment_entry"
 	}
 }
 
