@@ -79,7 +79,11 @@ def create_repack_entry(source_name, target_doc=None):
 
 
 def apply_composition_items_to_stock_entry(doc, method):
-    if doc.stock_entry_type != "Cropster":
+    # Check if this is a Cropster entry and item_type is "Material Receipt"
+    if not doc.custom_cropster_type_entry or doc.custom_cropster_type_entry.upper() != "YES":
+        return
+
+    if doc.item_type != "Material Receipt":
         return
 
     raw_warehouse = doc.get("custom_cropster_raw_material_warehouse")
@@ -129,7 +133,16 @@ def apply_composition_items_to_stock_entry(doc, method):
     if has_items:
         material_issue_entry.save()
         # Optional: material_issue_entry.submit()
-        frappe.msgprint(f'✅ <a href="/app/stock-entry/{material_issue_entry.name}" target="_blank">View Material Issue: <b>{material_issue_entry.name}</b></a>')
+        frappe.msgprint(
+	    f'✅ <a href="/app/stock-entry/{material_issue_entry.name}" target="_blank">'
+	    f'View Material Issue: <b>{material_issue_entry.name}</b></a>',
+	    indicator="green"
+	)
+        url=f"/app/stock-entry/{material_issue_entry.name}"
+        # ⛓️ Link back to the created Material Issue
+        doc.custom_cropster_raw_material_entry = url
+        doc.save()
     else:
         frappe.msgprint("ℹ️ No composition items found to deduct.")
+
 
