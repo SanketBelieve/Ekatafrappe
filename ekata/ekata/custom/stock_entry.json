@@ -1018,7 +1018,7 @@
    "columns": 0,
    "creation": "2025-04-16 14:16:47.595250",
    "default": null,
-   "depends_on": "eval:doc.stock_entry_type==\"Cropster\"",
+   "depends_on": "eval:doc.custom_cropster_type_entry==\"YES\"",
    "description": null,
    "docstatus": 0,
    "dt": "Stock Entry",

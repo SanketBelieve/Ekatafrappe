@@ -165,14 +165,6 @@ fixtures = [
                 "is_standard", "=", 0
             ]
         ]
-    },
-    {
-        "dt": "Stock Entry Type",
-        "filters": [
-            [
-                "name", "=", "Cropster"
-            ]
-        ]
     }
 ]
 

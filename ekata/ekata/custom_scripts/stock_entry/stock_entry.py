@@ -77,7 +77,6 @@ def create_repack_entry(source_name, target_doc=None):
 			})
 	return stock_entry
 
-
 def apply_composition_items_to_stock_entry(doc, method):
     # Check if this is a Cropster entry and item_type is "Material Receipt"
     if not doc.custom_cropster_type_entry or doc.custom_cropster_type_entry.upper() != "YES":
@@ -113,11 +112,13 @@ def apply_composition_items_to_stock_entry(doc, method):
             fields=["name"]
         )
 
+        composition_summary = []  # to build summary for this item
+
         for composition in compositions:
             comp_doc = frappe.get_doc("Composition of Items", composition.name)
 
             for child in comp_doc.composition:
-                total_qty = child.qty * item.qty
+                total_qty = (child.qty or 0) * (item.qty or 0)
 
                 material_issue_entry.append("items", {
                     "item_code": child.item,
@@ -129,20 +130,27 @@ def apply_composition_items_to_stock_entry(doc, method):
                 })
 
                 has_items = True
+                composition_summary.append(
+                    f"{child.item}: {total_qty} {child.uom}"
+                )
+
+        # 📝 Set the composition summary in the main stock entry item's custom field
+        if composition_summary:
+            item.custom_composition_description = "\n".join(composition_summary)
 
     if has_items:
         material_issue_entry.save()
-        # Optional: material_issue_entry.submit()
         frappe.msgprint(
-	    f'✅ <a href="/app/stock-entry/{material_issue_entry.name}" target="_blank">'
-	    f'View Material Issue: <b>{material_issue_entry.name}</b></a>',
-	    indicator="green"
-	)
-        url=f"/app/stock-entry/{material_issue_entry.name}"
-        # ⛓️ Link back to the created Material Issue
-        doc.custom_cropster_raw_material_entry = url
+            f'✅ <a href="/app/stock-entry/{material_issue_entry.name}" target="_blank">'
+            f'View Material Issue: <b>{material_issue_entry.name}</b></a>',
+            indicator="green"
+        )
+
+        # ⛓️ Link back the created material issue
+        doc.custom_cropster_raw_material_entry = f"/app/stock-entry/{material_issue_entry.name}"
         doc.save()
     else:
         frappe.msgprint("ℹ️ No composition items found to deduct.")
+
 
 
