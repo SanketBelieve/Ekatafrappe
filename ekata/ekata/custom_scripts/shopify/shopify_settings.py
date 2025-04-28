@@ -17,6 +17,9 @@ def handle_sales_order(doc, method):
         # 💳 Payment Terms
         if settings.payment_terms:
             doc.payment_terms_template = settings.payment_terms
+        # Branch
+        if settings.branch:
+            doc.branch = settings.branch
 
         doc.save(ignore_permissions=True)
         frappe.msgprint("✅ Shopify settings applied to Sales Order: Cost Center, Terms & Conditions, Payment Terms")
@@ -29,6 +32,7 @@ def handle_sales_invoice(doc, method):
         # 🌏 Supply Info
         doc.supply = doc.place_of_supply
         doc.country_of_origin_of_goods = "India"
+        doc.terms_of_delivery_and_payment = "100% Advance with order conformation"
 
         # 📜 Terms & Conditions (tc_name)
         if settings.terms_of_delivery_and_payment:
@@ -43,7 +47,9 @@ def handle_sales_invoice(doc, method):
             doc.debit_to = settings.sales_invoice_debit_to
         if settings.sales_order_cost_center:
             doc.cost_center = settings.sales_order_cost_center
-
+        # Branch
+        if settings.branch:
+            doc.branch = settings.branch
         # 🔄 Items: Income Account & Cost Center
         for item in doc.items:
             if settings.income_account:
@@ -59,7 +65,7 @@ def handle_payment_entry(doc, method):
     settings = frappe.get_single("Additional Shopify Settings")
 
     # 📜 Terms of Delivery & Payment (always 100% Advance)
-    doc.terms_of_delivery_and_payment = "100% Advance with order conformation"
+    
 
     # 💳 Mode of Payment
     if settings.mode_of_payment:

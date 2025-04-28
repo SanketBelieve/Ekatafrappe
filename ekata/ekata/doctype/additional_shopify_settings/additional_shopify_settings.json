@@ -11,7 +11,8 @@
   "sales_invoice_debit_to",
   "mode_of_payment",
   "terms_of_delivery_and_payment",
-  "payment_terms"
+  "payment_terms",
+  "branch"
  ],
  "fields": [
   {
@@ -62,13 +63,19 @@
    "fieldtype": "Link",
    "label": "Payment Terms",
    "options": "Payment Term"
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "label": "Branch",
+   "options": "Branch"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-04-28 20:18:49.458295",
+ "modified": "2025-04-28 23:12:05.118650",
  "modified_by": "Administrator",
  "module": "Ekata",
  "name": "Additional Shopify Settings",
