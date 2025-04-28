@@ -2,12 +2,99 @@
  {
   "docstatus": 0,
   "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-05-16 14:42:15.961711",
+  "name": "Approved from procurement",
+  "style": "",
+  "workflow_state_name": "Approved from procurement"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-11-09 14:45:37.029229",
+  "name": "Create Delivery Note",
+  "style": "Warning",
+  "workflow_state_name": "Create Delivery Note"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-11-09 14:45:37.068179",
+  "name": "Start Hulling",
+  "style": "Info",
+  "workflow_state_name": "Start Hulling"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-11-09 14:45:37.077380",
+  "name": "Waiting for Supplier Invoice",
+  "style": "",
+  "workflow_state_name": "Waiting for Supplier Invoice"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-11-09 14:45:37.086071",
+  "name": "Invoice Received From Supplier",
+  "style": "",
+  "workflow_state_name": "Invoice Received From Supplier"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-11-09 14:45:37.095813",
+  "name": "Grade wise Repack",
+  "style": "Success",
+  "workflow_state_name": "Grade wise Repack"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-11-09 14:45:37.115631",
+  "name": "Coffee Received at Chamundi",
+  "style": "Warning",
+  "workflow_state_name": "Coffee Received at Chamundi"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2024-02-20 15:26:54.254630",
+  "name": "Approved by accounts",
+  "style": "",
+  "workflow_state_name": "Approved by accounts"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2024-02-20 15:31:30.777853",
+  "name": "Pending approval from Accounts",
+  "style": "",
+  "workflow_state_name": "Pending approval from Accounts"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-01-29 11:30:08.750387",
+  "name": "Buying manager Approved",
+  "style": "",
+  "workflow_state_name": "Buying manager Approved"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
   "icon": "question-sign",
   "modified": "2022-08-26 09:25:04.157219",
   "name": "Pending",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "",
   "workflow_state_name": "Pending"
  },
@@ -17,9 +104,6 @@
   "icon": "remove",
   "modified": "2022-08-26 09:25:04.161275",
   "name": "Rejected",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "Danger",
   "workflow_state_name": "Rejected"
  },
@@ -29,9 +113,6 @@
   "icon": "",
   "modified": "2023-05-29 16:48:21.967886",
   "name": "Draft",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "Danger",
   "workflow_state_name": "Draft"
  },
@@ -41,9 +122,6 @@
   "icon": "",
   "modified": "2022-11-18 13:09:14.026315",
   "name": "Pending Approval From Finance",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "",
   "workflow_state_name": "Pending Approval From Finance"
  },
@@ -53,9 +131,6 @@
   "icon": "ok-sign",
   "modified": "2022-12-06 12:02:23.237780",
   "name": "Approved",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "Success",
   "workflow_state_name": "Approved"
  },
@@ -65,9 +140,6 @@
   "icon": "",
   "modified": "2022-11-22 19:09:00.456483",
   "name": "Pending for Approval",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "",
   "workflow_state_name": "Pending for Approval"
  },
@@ -77,9 +149,6 @@
   "icon": "",
   "modified": "2022-11-22 19:11:29.194809",
   "name": "Pending Approval 1",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "",
   "workflow_state_name": "Pending Approval 1"
  },
@@ -89,9 +158,6 @@
   "icon": "",
   "modified": "2022-11-22 19:25:47.834593",
   "name": "Pending Approval 2",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "",
   "workflow_state_name": "Pending Approval 2"
  },
@@ -101,9 +167,6 @@
   "icon": "",
   "modified": "2022-11-24 12:56:16.495026",
   "name": "Approved by Finance",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "",
   "workflow_state_name": "Approved by Finance"
  },
@@ -113,9 +176,6 @@
   "icon": "",
   "modified": "2023-02-20 16:29:42.673889",
   "name": "Approved by HR Manager",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "",
   "workflow_state_name": "Approved by HR Manager"
  },
@@ -125,9 +185,6 @@
   "icon": "",
   "modified": "2023-02-20 16:39:41.265044",
   "name": "Approved by Vivek",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "",
   "workflow_state_name": "Approved by Vivek"
  },
@@ -137,9 +194,6 @@
   "icon": "",
   "modified": "2023-02-20 16:46:16.992438",
   "name": "Approved by Arun",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "",
   "workflow_state_name": "Approved by Arun"
  },
@@ -149,9 +203,6 @@
   "icon": "",
   "modified": "2023-02-24 11:47:11.043362",
   "name": "Approved by Quality Dept",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "",
   "workflow_state_name": "Approved by Quality Dept"
  },
@@ -161,9 +212,6 @@
   "icon": "",
   "modified": "2023-02-24 11:50:23.555472",
   "name": "Approved by Plantation",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "",
   "workflow_state_name": "Approved by Plantation"
  },
@@ -173,9 +221,6 @@
   "icon": "",
   "modified": "2023-04-05 10:56:59.685252",
   "name": "Approved by Leave Approver",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "",
   "workflow_state_name": "Approved by Leave Approver"
  },
@@ -185,9 +230,6 @@
   "icon": "",
   "modified": "2023-05-29 16:44:41.301839",
   "name": "Approved By Logistics",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "Success",
   "workflow_state_name": "Approved By Logistics"
  },
@@ -197,9 +239,6 @@
   "icon": "",
   "modified": "2023-05-29 17:29:59.968720",
   "name": "Approved From Purchase",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "Success",
   "workflow_state_name": "Approved From Purchase"
  },
@@ -209,9 +248,6 @@
   "icon": "",
   "modified": "2023-05-29 17:54:40.975566",
   "name": "Approved From Green Stock",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "",
   "workflow_state_name": "Approved From Green Stock"
  },
@@ -221,9 +257,6 @@
   "icon": "",
   "modified": "2023-05-29 17:56:35.046128",
   "name": "Approved From Roasted Stock",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "",
   "workflow_state_name": "Approved From Roasted Stock"
  },
@@ -233,10 +266,124 @@
   "icon": "",
   "modified": "2023-05-29 18:07:12.355280",
   "name": "Approved From Finance",
-  "parent": null,
-  "parentfield": null,
-  "parenttype": null,
   "style": "",
   "workflow_state_name": "Approved From Finance"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2024-06-11 10:32:19.716894",
+  "name": "Bulked Lot",
+  "style": "",
+  "workflow_state_name": "Bulked Lot"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2025-03-26 13:22:33.528472",
+  "name": "Approved From Customer",
+  "style": "",
+  "workflow_state_name": "Approved From Customer"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-11-09 14:45:36.918489",
+  "name": "Repack",
+  "style": "Success",
+  "workflow_state_name": "Repack"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-11-09 14:45:36.998858",
+  "name": "Cancelled",
+  "style": "Danger",
+  "workflow_state_name": "Cancelled"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2024-06-11 10:32:08.145805",
+  "name": "Repacked",
+  "style": "",
+  "workflow_state_name": "Repacked"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-11-09 14:45:37.017427",
+  "name": "Hulling Completed",
+  "style": "Success",
+  "workflow_state_name": "Hulling Completed"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-11-09 14:45:37.105389",
+  "name": "Hulling In-Progress",
+  "style": "Info",
+  "workflow_state_name": "Hulling In-Progress"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-11-09 14:45:37.039487",
+  "name": "Stock Verified",
+  "style": "Success",
+  "workflow_state_name": "Stock Verified"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-11-09 14:45:37.058064",
+  "name": "Item Received",
+  "style": "Primary",
+  "workflow_state_name": "Item Received"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-11-09 14:45:37.048348",
+  "name": "Book Purchase Invoice",
+  "style": "Info",
+  "workflow_state_name": "Book Purchase Invoice"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-11-09 14:45:36.980266",
+  "name": "Service Completed",
+  "style": "Success",
+  "workflow_state_name": "Service Completed"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-11-09 14:45:36.990002",
+  "name": "Service In-Progress",
+  "style": "Success",
+  "workflow_state_name": "Service In-Progress"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-11-09 14:45:37.008055",
+  "name": "Submitted",
+  "style": "",
+  "workflow_state_name": "Submitted"
  }
 ]

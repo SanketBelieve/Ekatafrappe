@@ -165,6 +165,23 @@ fixtures = [
                 "is_standard", "=", 0
             ]
         ]
+    },
+    
+    {
+        "dt": "Server Script"
+        
+    },
+    {
+        "dt": "Workflow",
+        
+    },
+     {
+        "dt": "Workflow State",
+        
+    },
+     {
+        "dt": "Workflow Action",
+        
     }
 ]
 

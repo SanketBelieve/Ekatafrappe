@@ -15,11 +15,15 @@
   "contact_email",
   "contact_phone",
   "opportunity",
+  "opportunity_billing_address",
+  "opportunity_shipping_address",
   "opportunity_category",
   "opportunity_purpose",
   "lead_type",
   "customer",
   "lead_address",
+  "address_line_1",
+  "address_line_2",
   "city",
   "state",
   "pin_code",
@@ -183,12 +187,37 @@
    "fieldname": "lead_purpose",
    "fieldtype": "Data",
    "label": "Lead Purpose"
+  },
+  {
+   "fieldname": "opportunity_billing_address",
+   "fieldtype": "Link",
+   "label": "Opportunity Billing Address",
+   "options": "Address",
+   "read_only": 1
+  },
+  {
+   "fieldname": "opportunity_shipping_address",
+   "fieldtype": "Link",
+   "label": "Opportunity Shipping Address",
+   "options": "Address",
+   "read_only": 1
+  },
+  {
+   "fieldname": "address_line_1",
+   "fieldtype": "Data",
+   "label": "Address Line 1"
+  },
+  {
+   "fieldname": "address_line_2",
+   "fieldtype": "Data",
+   "label": "Address Line 2"
   }
  ],
+ "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-04-16 10:55:16.888929",
+ "modified": "2025-04-28 09:02:48.926459",
  "modified_by": "Administrator",
  "module": "Ekata",
  "name": "Feedback",
@@ -209,6 +238,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []
