@@ -211,6 +211,7 @@ def create_quotation_from_feedback(feedback_name):
     quotation.quotation_to = "Customer"
     quotation.party_name = feedback.customer
     quotation.customer_name = feedback.customer
+    quotation.custom_lead_type = feedback.lead_type
 
     if billing_address:
         quotation.billing_address_name = billing_address

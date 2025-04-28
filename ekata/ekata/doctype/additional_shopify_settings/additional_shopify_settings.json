@@ -8,7 +8,10 @@
   "sales_order_cost_center",
   "income_account",
   "paid_from_account",
-  "sales_invoice_debit_to"
+  "sales_invoice_debit_to",
+  "mode_of_payment",
+  "terms_of_delivery_and_payment",
+  "payment_terms"
  ],
  "fields": [
   {
@@ -41,12 +44,31 @@
    "label": "Sales Invoice Debit To",
    "options": "Account",
    "reqd": 1
+  },
+  {
+   "fieldname": "mode_of_payment",
+   "fieldtype": "Link",
+   "label": "Mode Of Payment",
+   "options": "Mode of Payment"
+  },
+  {
+   "fieldname": "terms_of_delivery_and_payment",
+   "fieldtype": "Link",
+   "label": "Terms of Delivery and Payment",
+   "options": "Terms and Conditions"
+  },
+  {
+   "fieldname": "payment_terms",
+   "fieldtype": "Link",
+   "label": "Payment Terms",
+   "options": "Payment Term"
   }
  ],
+ "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-04-16 12:46:36.995913",
+ "modified": "2025-04-28 20:18:49.458295",
  "modified_by": "Administrator",
  "module": "Ekata",
  "name": "Additional Shopify Settings",
@@ -63,6 +85,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []
