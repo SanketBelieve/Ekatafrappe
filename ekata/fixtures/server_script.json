@@ -9,13 +9,13 @@
   "doctype_event": "Before Save (Submitted Document)",
   "enable_rate_limit": 0,
   "event_frequency": "All",
-  "modified": "2025-04-27 23:28:25.958491",
+  "modified": "2025-04-28 14:00:41.476074",
   "module": "Ekata",
   "name": "QT script",
   "rate_limit_count": 5,
   "rate_limit_seconds": 86400,
   "reference_doctype": "Quotation",
-  "script": "if doc.workflow_state == \"Approved From Customer\":\n    attachments = frappe.get_all(\n        \"File\",\n        filters={\n            \"attached_to_doctype\": doc.doctype,\n            \"attached_to_name\": doc.name,\n            \"is_folder\": 0,\n            \"attached_to_field\": None\n        },\n        fields=[\"name\"]\n    )\n\n    if len(attachments) < 1:\n        frappe.throw(\"📎 Attachment is missing.\")\n",
+  "script": "if doc.workflow_state == \"Approved From Customer\":\n    attachments = frappe.get_all(\n        \"File\",\n        filters={\n            \"attached_to_doctype\": doc.doctype,\n            \"attached_to_name\": doc.name,\n            \"is_folder\": 0,\n            \"attached_to_field\": \"\"  # ← change is here\n        },\n        fields=[\"name\"]\n    )\n    len_off_attchement = len(attachments)\n    if len_off_attchement < 1:\n        frappe.throw(f\"📎 Attachment is missing. {len_off_attchement}\")\n",
   "script_type": "DocType Event"
  }
 ]
