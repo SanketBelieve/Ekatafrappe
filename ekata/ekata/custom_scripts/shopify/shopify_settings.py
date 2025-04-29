@@ -15,6 +15,7 @@ def handle_sales_order(doc, method):
             doc.tc_name = settings.terms_of_delivery_and_payment
         doc.country_of_origin_of_goods = "India"
         doc.terms_of_delivery_and_payment = "100% Advance with order conformation"
+        doc.custom_sales_type="Roasted"
         # 💳 Payment Terms
         if settings.payment_terms:
             doc.payment_terms_template = settings.payment_terms
