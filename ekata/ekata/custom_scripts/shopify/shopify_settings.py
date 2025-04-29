@@ -47,6 +47,7 @@ def handle_sales_invoice(doc, method):
         doc.supply = doc.place_of_supply
         doc.country_of_origin_of_goods = "India"
         doc.terms_of_delivery_and_payment = "100% Advance with order conformation"
+        doc.custom_sales_order_type="Roasted"
 
         # 📜 Terms & Conditions
         if settings.terms_of_delivery_and_payment:
