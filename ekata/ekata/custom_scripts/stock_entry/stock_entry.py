@@ -77,80 +77,80 @@ def create_repack_entry(source_name, target_doc=None):
 			})
 	return stock_entry
 
-def apply_composition_items_to_stock_entry(doc, method):
-    # Check if this is a Cropster entry and item_type is "Material Receipt"
-    if not doc.custom_cropster_type_entry or doc.custom_cropster_type_entry.upper() != "YES":
-        return
+# def apply_composition_items_to_stock_entry(doc, method):
+#     # Check if this is a Cropster entry and item_type is "Material Receipt"
+#     if not doc.custom_cropster_type_entry or doc.custom_cropster_type_entry.upper() != "YES":
+#         return
 
-    if doc.item_type != "Material Receipt":
-        return
+#     if doc.item_type != "Material Receipt":
+#         return
 
-    raw_warehouse = doc.get("custom_cropster_raw_material_warehouse")
-    if not raw_warehouse:
-        frappe.msgprint("⚠️ No Raw Material Warehouse specified for Cropster entry.")
-        return
+#     raw_warehouse = doc.get("custom_cropster_raw_material_warehouse")
+#     if not raw_warehouse:
+#         frappe.msgprint("⚠️ No Raw Material Warehouse specified for Cropster entry.")
+#         return
 
-    # ✅ Create Material Issue Entry for Composition Deduction
-    material_issue_entry = frappe.new_doc("Stock Entry")
-    material_issue_entry.stock_entry_type = "Material Issue"
-    material_issue_entry.purpose = "Material Issue"
-    material_issue_entry.company = doc.company
-    material_issue_entry.custom_cropster_entry = 1
-    material_issue_entry.posting_date = doc.posting_date
-    material_issue_entry.posting_time = doc.posting_time
-    material_issue_entry.set_posting_time = 1
-    material_issue_entry.remarks = f"Auto-created to deduct raw materials for Cropster entry {doc.name}"
-    material_issue_entry.reference_doctype = "Stock Entry"
-    material_issue_entry.reference_name = doc.name
+#     # ✅ Create Material Issue Entry for Composition Deduction
+#     material_issue_entry = frappe.new_doc("Stock Entry")
+#     material_issue_entry.stock_entry_type = "Material Issue"
+#     material_issue_entry.purpose = "Material Issue"
+#     material_issue_entry.company = doc.company
+#     material_issue_entry.custom_cropster_entry = 1
+#     material_issue_entry.posting_date = doc.posting_date
+#     material_issue_entry.posting_time = doc.posting_time
+#     material_issue_entry.set_posting_time = 1
+#     material_issue_entry.remarks = f"Auto-created to deduct raw materials for Cropster entry {doc.name}"
+#     material_issue_entry.reference_doctype = "Stock Entry"
+#     material_issue_entry.reference_name = doc.name
 
-    has_items = False
+#     has_items = False
 
-    for item in doc.items:
-        compositions = frappe.get_all(
-            "Composition of Items",
-            filters={"item": item.item_code},
-            fields=["name"]
-        )
+#     for item in doc.items:
+#         compositions = frappe.get_all(
+#             "Composition of Items",
+#             filters={"item": item.item_code},
+#             fields=["name"]
+#         )
 
-        composition_summary = []  # to build summary for this item
+#         composition_summary = []  # to build summary for this item
 
-        for composition in compositions:
-            comp_doc = frappe.get_doc("Composition of Items", composition.name)
+#         for composition in compositions:
+#             comp_doc = frappe.get_doc("Composition of Items", composition.name)
 
-            for child in comp_doc.composition:
-                total_qty = (child.qty or 0) * (item.qty or 0)
+#             for child in comp_doc.composition:
+#                 total_qty = (child.qty or 0) * (item.qty or 0)
 
-                material_issue_entry.append("items", {
-                    "item_code": child.item,
-                    "qty": total_qty,
-                    "uom": child.uom,
-                    "stock_uom": child.uom,
-                    "conversion_factor": 1,
-                    "s_warehouse": raw_warehouse
-                })
+#                 material_issue_entry.append("items", {
+#                     "item_code": child.item,
+#                     "qty": total_qty,
+#                     "uom": child.uom,
+#                     "stock_uom": child.uom,
+#                     "conversion_factor": 1,
+#                     "s_warehouse": raw_warehouse
+#                 })
 
-                has_items = True
-                composition_summary.append(
-                    f"{child.item}: {total_qty} {child.uom}"
-                )
+#                 has_items = True
+#                 composition_summary.append(
+#                     f"{child.item}: {total_qty} {child.uom}"
+#                 )
 
-        # 📝 Set the composition summary in the main stock entry item's custom field
-        if composition_summary:
-            item.custom_composition_description = "\n".join(composition_summary)
+#         # 📝 Set the composition summary in the main stock entry item's custom field
+#         if composition_summary:
+#             item.custom_composition_description = "\n".join(composition_summary)
 
-    if has_items:
-        material_issue_entry.save()
-        frappe.msgprint(
-            f'✅ <a href="/app/stock-entry/{material_issue_entry.name}" target="_blank">'
-            f'View Material Issue: <b>{material_issue_entry.name}</b></a>',
-            indicator="green"
-        )
+#     if has_items:
+#         material_issue_entry.save()
+#         frappe.msgprint(
+#             f'✅ <a href="/app/stock-entry/{material_issue_entry.name}" target="_blank">'
+#             f'View Material Issue: <b>{material_issue_entry.name}</b></a>',
+#             indicator="green"
+#         )
 
-        # ⛓️ Link back the created material issue
-        doc.custom_cropster_raw_material_entry = f"/app/stock-entry/{material_issue_entry.name}"
-        doc.save()
-    else:
-        frappe.msgprint("ℹ️ No composition items found to deduct.")
+#         # ⛓️ Link back the created material issue
+#         doc.custom_cropster_raw_material_entry = f"/app/stock-entry/{material_issue_entry.name}"
+#         doc.save()
+#     else:
+#         frappe.msgprint("ℹ️ No composition items found to deduct.")
 
 
 

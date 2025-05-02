@@ -12,7 +12,8 @@
   "mode_of_payment",
   "terms_of_delivery_and_payment",
   "payment_terms",
-  "branch"
+  "branch",
+  "create_stock_entry_for_sales_orders"
  ],
  "fields": [
   {
@@ -69,13 +70,19 @@
    "fieldtype": "Link",
    "label": "Branch",
    "options": "Branch"
+  },
+  {
+   "default": "0",
+   "fieldname": "create_stock_entry_for_sales_orders",
+   "fieldtype": "Check",
+   "label": "Create Stock Entry For Sales Orders"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-04-28 23:12:05.118650",
+ "modified": "2025-05-02 16:28:40.542559",
  "modified_by": "Administrator",
  "module": "Ekata",
  "name": "Additional Shopify Settings",

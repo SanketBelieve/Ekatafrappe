@@ -207,22 +207,20 @@ doc_events = {
 		"validate": "ekata.ekata.custom_scripts.quotation.quotation.validate",
 		"after_insert": "ekata.ekata.custom_scripts.quotation.quotation.after_insert"
 	},
-	"Delivery Note": {
-		"on_submit": "ekata.ekata.custom_scripts.delivery_note.delivery_note.apply_composition_items_only"
-	},
 	"Sales Order": {
 		"validate": "ekata.ekata.custom_scripts.sales_order.sales_order.validate",
 		"after_insert": ["ekata.ekata.custom_scripts.sales_order.sales_order.after_insert","ekata.ekata.custom_scripts.shopify.shopify_settings.handle_sales_order"],
-		"on_submit": "ekata.ekata.custom_scripts.delivery_note.delivery_note.create_and_process_delivery_note"
+		"on_submit": "ekata.ekata.custom_scripts.shopify.shopify_settings.create_and_process_delivery_note"
 	},
 	"Supplier Quotation": {
 		"validate": "ekata.ekata.custom_scripts.supplier_quotation.supplier_quotation.validate"
 	},
 	"Stock Entry": {
 		"on_submit": "ekata.ekata.custom_scripts.stock_entry.stock_entry.on_submit",
-        	"validate": "ekata.ekata.custom_scripts.stock_entry.stock_entry.validate",
-        	"after_insert": "ekata.ekata.custom_scripts.stock_entry.stock_entry.apply_composition_items_to_stock_entry"
+        "validate": "ekata.ekata.custom_scripts.stock_entry.stock_entry.validate",
+        	
 	},
+    
 	"Material Request": {
 		"validate": "ekata.ekata.custom_scripts.material_request.material_request.validate"
 	},
