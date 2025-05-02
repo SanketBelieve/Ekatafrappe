@@ -121,6 +121,7 @@ def create_and_process_delivery_note(doc, method):
 
         if len(boms) == 1:
             bom_name = boms[0].name
+            dn.custom_loss_percent = flt(boms[0].custom_loss_percentage)
         else:
             checked = frappe.get_all(
                 "BOM",
