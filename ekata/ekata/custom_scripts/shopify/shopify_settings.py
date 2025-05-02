@@ -2,6 +2,7 @@ import frappe
 from frappe.utils import today, flt
 from erpnext.selling.doctype.sales_order.sales_order import make_delivery_note
 
+
 def handle_sales_order(doc, method):
     if doc.shopify_order_id:
         settings = frappe.get_single("Additional Shopify Settings")
@@ -82,114 +83,89 @@ def handle_payment_entry(doc, method):
 
 
 def create_and_process_delivery_note(doc, method):
+    # Only for Shopify orders
     if not doc.shopify_order_id:
         return
 
-    # Step 1: Create Delivery Note (finished goods only)
+    # 1️⃣ Create DN draft
     dn = make_delivery_note(doc.name)
 
-    branch = frappe.get_all("Branch", fields=["name"], limit_page_length=1, order_by="creation ASC")
+    # 2️⃣ Assign the very first Branch
+    branch = frappe.get_all(
+        "Branch",
+        fields=["name"],
+        limit_page_length=1,
+        order_by="creation ASC"
+    )
     if not branch:
         frappe.throw("No Branch found – cannot create Delivery Note.")
     dn.branch = branch[0].name
 
+    # 3️⃣ Tag & stamp
     dn.custom_delivery_note_category = "Ecommerce-Blending"
     dn.set_posting_time = 1
     dn.posting_date = today()
 
-    dn.insert(ignore_permissions=True)
-    dn.submit()
-    frappe.msgprint(f"✅ Delivery Note created and submitted: {dn.name}")
-
-    # Step 2: BOM explosion → Material Issue + Raw Material Data
+    # 4️⃣ Explode each SO line via its BOM
     material_issue_items = []
-    total_weight = 0.0
-    weight_uom = None
-    used_bom_names = set()
+    used_boms = set()
 
-    for line in doc.items:
-        boms = frappe.get_all("BOM", filters={"item": line.item_code, "is_active": 1, "docstatus": 1}, fields=["name"])
+    for so_line in doc.items:
+        boms = frappe.get_all(
+            "BOM",
+            filters={"item": so_line.item_code, "is_active": 1, "docstatus": 1},
+            fields=["name"]
+        )
         if not boms:
             continue
 
-        # Smart BOM selection
         if len(boms) == 1:
             bom_name = boms[0].name
         else:
-            checked_bom = frappe.get_all(
+            checked = frappe.get_all(
                 "BOM",
-                filters={
-                    "item": line.item_code,
-                    "is_active": 1,
-                    "docstatus": 1,
-                    "custom_sales_order_automation": 1
-                },
+                filters={"item": so_line.item_code, "custom_sales_order_automation": 1},
                 fields=["name"],
                 order_by="creation DESC",
                 limit_page_length=1
             )
-            if checked_bom:
-                bom_name = checked_bom[0].name
-            else:
-                latest_bom = frappe.get_all(
-                    "BOM",
-                    filters={"item": line.item_code, "is_active": 1, "docstatus": 1},
-                    fields=["name"],
-                    order_by="creation DESC",
-                    limit_page_length=1
-                )
-                if not latest_bom:
-                    frappe.throw(f"No valid BOM found for {line.item_code}")
-                bom_name = latest_bom[0].name
+            bom_name = checked[0].name if checked else sorted([b.name for b in boms], reverse=True)[0]
 
         bom = frappe.get_doc("BOM", bom_name)
+        used_boms.add(bom_name)
+
         base_qty = flt(bom.quantity) or 1.0
-        used_bom_names.add(bom_name)
-
         for bi in bom.items:
-            qty_per_unit = flt(bi.qty) / base_qty
-            total_qty = flt(qty_per_unit * flt(line.qty))
+            total_qty = flt(bi.qty) / base_qty * flt(so_line.qty)
+            warehouse = bi.source_warehouse or so_line.warehouse
 
+            # ➡️ Add raw material line
+            dn.append("custom_raw_material_items", {
+                "item": bi.item_code,
+                "uom": bi.uom,
+                "qty": total_qty,
+                "warehouse": warehouse
+            })
+
+            # 📝 Prepare Stock Entry line
             material_issue_items.append({
                 "item_code": bi.item_code,
                 "qty": total_qty,
                 "uom": bi.uom,
                 "stock_uom": bi.get("stock_uom"),
                 "conversion_factor": flt(bi.get("conversion_factor", 1)),
-                "s_warehouse": bi.get("source_warehouse") or line.warehouse
+                "s_warehouse": warehouse
             })
 
-            raw_item_row = {
-                "item": bi.item_code,
-                "uom": bi.uom,
-                "qty": total_qty
-            }
+    # 5️⃣ Record which BOMs were used
+    dn.custom_bom_used = ", ".join(sorted(used_boms))
 
-            if bi.uom and bi.uom.lower() in ("kg", "kgs", "kilogram", "kilograms", "gram", "grams", "g", "ton", "tons", "tonne", "tonnes"):
-                factor = get_weight_conversion_factor(bi.uom)
-                raw_item_row["weight"] = total_qty
-                total_weight += total_qty * factor
-                if not weight_uom:
-                    weight_uom = "Kg"
+    # 6️⃣ Finalize Delivery Note
+    dn.insert(ignore_permissions=True)
+    dn.submit()
+    frappe.msgprint(f"✅ Delivery Note created: {dn.name}")
 
-            dn.append("custom_raw_material_items", raw_item_row)
-
-        # Set raw material weight loss from BOM
-        if hasattr(bom, "custom_raw_material_weight_loss"):
-            dn.custom_loss_percent = bom.custom_raw_material_weight_loss
-
-    # Set weight & BOM fields
-    if total_weight:
-        dn.custom_raw_material_weight = total_weight
-        dn.custom_raw_material_weight_uom = weight_uom or "Kg"
-
-    # Save BOMs used as comma-separated list
-    if used_bom_names:
-        dn.custom_bom_used = ", ".join(sorted(used_bom_names))
-
-    dn.save(ignore_permissions=True)
-
-    # Step 3: Create Material Issue as draft
+    # 7️⃣ Create draft Material Issue
     if material_issue_items:
         se = frappe.new_doc("Stock Entry")
         se.stock_entry_type = "Material Issue"
@@ -202,21 +178,37 @@ def create_and_process_delivery_note(doc, method):
         for mi in material_issue_items:
             se.append("items", mi)
 
-        se.insert(ignore_permissions=True)  # 👈 Draft only
-        frappe.msgprint(f"📦 Draft Material Issue created: {se.name}")
-
+        se.insert(ignore_permissions=True)
         dn.custom_stock_entry_linked = se.name
         dn.save(ignore_permissions=True)
 
+def compute_bom_metrics(doc, method):
 
-def get_weight_conversion_factor(uom):
-    """Convert any weight UOM to KG"""
-    uom = (uom or "").strip().lower()
-    if uom in ("kg", "kgs", "kilogram", "kilograms"):
-        return 1
-    elif uom in ("gram", "grams", "g"):
-        return 0.001
-    elif uom in ("ton", "tons", "tonne", "tonnes"):
-        return 1000
-    else:
-        return 1  # fallback
+    try:
+        # 1️⃣ Sum raw material qty
+        total_raw_qty = flt(sum(flt(item.qty) for item in doc.items))
+        doc.custom_total_raw_material_qty = total_raw_qty
+
+        # 2️⃣ Get the RM to FG ratio
+        ratio = flt(doc.custom_fg_to_rm_weight_uom_ration)
+        if not ratio:
+            frappe.msgprint("⚠️ 'custom_fg_to_rm_weight_uom_ration' is not set or zero.")
+            return
+
+        # 3️⃣ Normalize raw material qty into FG units
+        normalized_rm_weight = flt(total_raw_qty * ratio)
+        doc.custom_rm_weight_normalized = normalized_rm_weight
+
+        # 4️⃣ Get actual FG weight
+        fg_weight = flt(doc.custom_item_weight)
+
+        # 5️⃣ Compute loss and percentage
+        loss_qty = flt(normalized_rm_weight - fg_weight)
+        doc.custom_qty_loss = loss_qty
+        doc.custom_loss_percentage = flt((loss_qty / normalized_rm_weight * 100) if normalized_rm_weight else 0.0)
+        frappe.msgprint(f"Debug ➤ FG Weight: {fg_weight}, Normalized RM: {normalized_rm_weight}")
+
+        # ✅ Optional debug output
+        
+    except Exception as e:
+        frappe.msgprint(f"❌ Error in compute_bom_metrics: {str(e)}")

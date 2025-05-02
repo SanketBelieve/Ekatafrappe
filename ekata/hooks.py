@@ -232,6 +232,9 @@ doc_events = {
 	},
 	"Payment Entry":{
 		"after_insert": "ekata.ekata.custom_scripts.shopify.shopify_settings.handle_payment_entry"
+	},
+	"BOM":{
+		"validate":"ekata.ekata.custom_scripts.shopify.shopify_settings.compute_bom_metrics"
 	}
 }
 
