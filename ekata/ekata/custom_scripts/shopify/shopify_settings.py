@@ -145,6 +145,14 @@ def create_and_process_delivery_note(doc, method):
                 {"item_code": bi.item_code, "warehouse": warehouse},
                 "actual_qty"
             ) or 0.0)
+
+            warehouse_uom = frappe.db.get_value(
+                "Bin",
+                {"item_code": bi.item_code, "warehouse": warehouse},
+                "stock_uom"
+            ) or None
+            #!stock_uom
+            print("warehouse_uom",warehouse_uom,"\n\n\n\n")
             # ➡️ Add raw material line
             dn.append("custom_raw_material_items", {
                 "item": bi.item_code,
@@ -153,6 +161,7 @@ def create_and_process_delivery_note(doc, method):
                 "warehouse": warehouse,
                 "warehouse_qty": warehouse_qty,
                 "weight": total_qty,
+                "stock_uom": warehouse_uom,
                
             })
 
@@ -181,6 +190,7 @@ def create_and_process_delivery_note(doc, method):
         se.stock_entry_type = "Material Issue"
         se.purpose = "Material Issue"
         se.company = doc.company
+        se.item_type="Material Issue"
         se.set_posting_time = 1
         se.posting_date = today()
         se.custom_linked_delivery_note = dn.name
@@ -199,6 +209,7 @@ def create_and_process_delivery_note(doc, method):
             {"item_code": line.item_code, "warehouse": line.warehouse},
             "actual_qty"
         ) or 0.0)
+        
         if available < flt(line.qty):
             fg_ok = False
             frappe.msgprint(
@@ -223,8 +234,10 @@ def create_and_process_delivery_note(doc, method):
             {"item_code": item.item_code, "warehouse": item.s_warehouse},
             "actual_qty"
         ) or 0.0)
+       
+
         print("available",available,"warehouse",item.s_warehouse,"\n\n\n","item qty",item.qty,"\n\n\n")
-        if available < flt(item.qty):
+        if available < flt(item.transfer_qty):
             raw_ok = False
             frappe.msgprint(
                 f"⚠️ Insufficient stock for Raw Material {item.item_code}: "
