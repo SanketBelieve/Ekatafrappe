@@ -1,6 +1,7 @@
 import frappe
 from frappe.utils import today, flt
 from erpnext.selling.doctype.sales_order.sales_order import make_delivery_note
+import math
 
 
 def handle_sales_order(doc, method):
@@ -126,7 +127,7 @@ def create_and_process_delivery_note(doc, method):
             checked = frappe.get_all(
                 "BOM",
                 filters={"item": so_line.item_code, "custom_sales_order_automation": 1},
-                fields=["name"],
+                fields=["name","custom_loss_percentage"],
                 order_by="creation DESC",
                 limit_page_length=1
             )
@@ -139,13 +140,20 @@ def create_and_process_delivery_note(doc, method):
         for bi in bom.items:
             total_qty = flt(bi.qty) / base_qty * flt(so_line.qty)
             warehouse = bi.source_warehouse or so_line.warehouse
-
+            warehouse_qty = flt(frappe.db.get_value(
+                "Bin",
+                {"item_code": bi.item_code, "warehouse": warehouse},
+                "actual_qty"
+            ) or 0.0)
             # ➡️ Add raw material line
             dn.append("custom_raw_material_items", {
                 "item": bi.item_code,
                 "uom": bi.uom,
                 "qty": total_qty,
-                "warehouse": warehouse
+                "warehouse": warehouse,
+                "warehouse_qty": warehouse_qty,
+                "weight": total_qty,
+               
             })
 
             # 📝 Prepare Stock Entry line
@@ -155,11 +163,12 @@ def create_and_process_delivery_note(doc, method):
                 "uom": bi.uom,
                 "stock_uom": bi.get("stock_uom"),
                 "conversion_factor": flt(bi.get("conversion_factor", 1)),
-                "s_warehouse": warehouse
+                "s_warehouse": warehouse,
             })
 
     # 5️⃣ Record which BOMs were used
     dn.custom_bom_used = ", ".join(sorted(used_boms))
+    
 
     # 6️⃣ Finalize Delivery Note
     dn.insert(ignore_permissions=True)
@@ -206,7 +215,9 @@ def compute_bom_metrics(doc, method):
         # 5️⃣ Compute loss and percentage
         loss_qty = flt(normalized_rm_weight - fg_weight)
         doc.custom_qty_loss = loss_qty
-        doc.custom_loss_percentage = flt((loss_qty / normalized_rm_weight * 100) if normalized_rm_weight else 0.0)
+        loss_percentage = flt((loss_qty / normalized_rm_weight * 100) if normalized_rm_weight else 0.0)
+        doc.custom_loss_percentage = round(loss_percentage)
+
         frappe.msgprint(f"Debug ➤ FG Weight: {fg_weight}, Normalized RM: {normalized_rm_weight}")
 
         # ✅ Optional debug output
