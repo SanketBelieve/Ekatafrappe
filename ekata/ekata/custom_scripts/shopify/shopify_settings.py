@@ -149,7 +149,7 @@ def create_and_process_delivery_note(doc, method):
             dn.append("custom_raw_material_items", {
                 "item": bi.item_code,
                 "uom": bi.uom,
-                "qty": total_qty,
+                "qty": total_qty/bom.quantity,
                 "warehouse": warehouse,
                 "warehouse_qty": warehouse_qty,
                 "weight": total_qty,
@@ -159,7 +159,7 @@ def create_and_process_delivery_note(doc, method):
             # 📝 Prepare Stock Entry line
             material_issue_items.append({
                 "item_code": bi.item_code,
-                "qty": total_qty,
+                "qty": total_qty/bom.quantity,
                 "uom": bi.uom,
                 "stock_uom": bi.get("stock_uom"),
                 "conversion_factor": flt(bi.get("conversion_factor", 1)),
@@ -200,20 +200,22 @@ def compute_bom_metrics(doc, method):
         doc.custom_total_raw_material_qty = total_raw_qty
 
         # 2️⃣ Get the RM to FG ratio
-        ratio = flt(doc.custom_fg_to_rm_weight_uom_ration)
+        ratio = doc.custom_fg_to_rm_weight_uom_ration
         if not ratio:
             frappe.msgprint("⚠️ 'custom_fg_to_rm_weight_uom_ration' is not set or zero.")
             return
 
         # 3️⃣ Normalize raw material qty into FG units
-        normalized_rm_weight = flt(total_raw_qty * ratio)
+        normalized_rm_weight = total_raw_qty * ratio
         doc.custom_rm_weight_normalized = normalized_rm_weight
 
         # 4️⃣ Get actual FG weight
-        fg_weight = flt(doc.custom_item_weight)
+        fg_weight = doc.custom_item_weight*doc.quantity
+        doc.custom_total_fg_weight= fg_weight
 
         # 5️⃣ Compute loss and percentage
-        loss_qty = flt(normalized_rm_weight - fg_weight)
+        loss_qty = normalized_rm_weight - fg_weight
+        #print(f"Debug ➤ Loss Qty: {normalized_rm_weight}-{fg_weight} {loss_qty}\n\n\n")
         doc.custom_qty_loss = loss_qty
         loss_percentage = flt((loss_qty / normalized_rm_weight * 100) if normalized_rm_weight else 0.0)
         doc.custom_loss_percentage = round(loss_percentage)
