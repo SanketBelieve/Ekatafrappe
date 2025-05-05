@@ -1,0 +1,32 @@
+{
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "doc.custom_stock_status==\"Insufficient\" or doc.custom_rm_stock_status==\"Insufficient\"",
+ "creation": "2025-05-05 15:11:39.093207",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Delivery Note",
+ "enabled": 1,
+ "event": "Submit",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "<p>Dear Team</p>\n<br><br>\nThe {{doc.name}} doesn't have suffifient stock\n<br>\nThanks",
+ "message_type": "HTML",
+ "modified": "2025-05-05 15:54:51.250704",
+ "modified_by": "Administrator",
+ "module": "Ekata",
+ "name": "DN STOCK INSUFFICIENT",
+ "owner": "Administrator",
+ "print_format": "Export Invoice Cum Packing List",
+ "recipients": [
+  {
+   "receiver_by_role": "Email DN"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "sender": "Notification",
+ "sender_email": "Erp@ekata.co.in",
+ "subject": "{{ doc.name }} Submit"
+}

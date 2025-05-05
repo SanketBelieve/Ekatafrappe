@@ -172,7 +172,7 @@ def create_and_process_delivery_note(doc, method):
 
     # 6️⃣ Finalize Delivery Note
     dn.insert(ignore_permissions=True)
-    dn.submit()
+    #dn.submit()
     frappe.msgprint(f"✅ Delivery Note created: {dn.name}")
 
     # 7️⃣ Create draft Material Issue
@@ -191,6 +191,72 @@ def create_and_process_delivery_note(doc, method):
         se.insert(ignore_permissions=True)
         dn.custom_stock_entry_linked = se.name
         dn.save(ignore_permissions=True)
+    # --- FG stock check (after dn.insert) ---
+    fg_ok = True
+    for line in dn.items:
+        available = flt(frappe.db.get_value(
+            "Bin",
+            {"item_code": line.item_code, "warehouse": line.warehouse},
+            "actual_qty"
+        ) or 0.0)
+        if available < flt(line.qty):
+            fg_ok = False
+            frappe.msgprint(
+                f"⚠️ Insufficient stock for Finished Good {line.item_code}: "
+                f"required {line.qty}, available {available}. DN stays Draft."
+            )
+            break
+
+    # if fg_ok:
+    #     dn.submit()
+    #     frappe.msgprint(f"✅ Delivery Note submitted: {dn.name}")
+    #     #dn.custom_stock_status="Insufficient"
+    # else:
+    #     frappe.msgprint("Delivery Note remains Draft due to insufficient FG stock.")
+
+
+    # --- Raw material stock check (after se.insert) ---
+    raw_ok = True
+    for item in se.items:
+        available = flt(frappe.db.get_value(
+            "Bin",
+            {"item_code": item.item_code, "warehouse": item.s_warehouse},
+            "actual_qty"
+        ) or 0.0)
+        print("available",available,"warehouse",item.s_warehouse,"\n\n\n","item qty",item.qty,"\n\n\n")
+        if available < flt(item.qty):
+            raw_ok = False
+            frappe.msgprint(
+                f"⚠️ Insufficient stock for Raw Material {item.item_code}: "
+                f"required {item.qty}, available {available}. Stock Entry stays Draft."
+            )
+            break
+
+    # if raw_ok:
+    #     se.submit()
+    #     frappe.msgprint(f"✅ Stock Entry submitted: {se.name}")
+    #     dn.custom_stock_entry_linked = se.name
+    # else:
+    #     frappe.msgprint("Stock Entry remains Draft due to insufficient raw materials.")
+    #     #dn.custom_stock_status="Insufficient"
+       
+    
+    if raw_ok:
+        dn.custom_rm_stock_status = "Sufficient"
+        se.submit()
+    else:
+        dn.custom_rm_stock_status = "Insufficient"
+        #se.custom_stock_status="Insufficient"
+    if fg_ok:
+        # If either stock check fails, set the status to "Insufficient"
+        dn.custom_stock_status = "Sufficient"
+        dn.submit()
+    else:
+        # If both stock checks pass, set the status to "Sufficient"
+        dn.custom_stock_status = "Insufficient"
+
+    
+    dn.save(ignore_permissions=True)
 
 def compute_bom_metrics(doc, method):
 
