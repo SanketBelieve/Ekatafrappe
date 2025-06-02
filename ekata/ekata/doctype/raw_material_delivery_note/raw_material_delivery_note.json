@@ -12,6 +12,7 @@
   "warehouse",
   "warehouse_qty",
   "stock_uom",
+  "normalized_qty",
   "weight"
  ],
  "fields": [
@@ -61,13 +62,18 @@
    "fieldtype": "Link",
    "label": "Stock Uom",
    "options": "UOM"
+  },
+  {
+   "fieldname": "normalized_qty",
+   "fieldtype": "Float",
+   "label": "Qty in Stock Uom"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-05-05 17:15:20.996608",
+ "modified": "2025-06-02 13:20:59.339060",
  "modified_by": "Administrator",
  "module": "Ekata",
  "name": "Raw Material Delivery Note",

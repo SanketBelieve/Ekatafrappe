@@ -83,15 +83,197 @@ def handle_payment_entry(doc, method):
     frappe.msgprint("✅ Shopify settings applied to Payment Entry.")
 
 
+# def create_and_process_delivery_note(doc, method):
+#     # Only for Shopify orders
+#     if not doc.shopify_order_id:
+#         return
+
+#     # 1️⃣ Create DN draft
+#     dn = make_delivery_note(doc.name)
+
+#     # 2️⃣ Assign the very first Branch
+#     branch = frappe.get_all(
+#         "Branch",
+#         fields=["name"],
+#         limit_page_length=1,
+#         order_by="creation ASC"
+#     )
+#     if not branch:
+#         frappe.throw("No Branch found – cannot create Delivery Note.")
+#     dn.branch = branch[0].name
+
+#     # 3️⃣ Tag & stamp
+#     dn.custom_delivery_note_category = "Ecommerce-Blending"
+#     dn.set_posting_time = 1
+#     dn.posting_date = today()
+
+#     # 4️⃣ Explode each SO line via its BOM
+#     material_issue_items = []
+#     used_boms = set()
+
+#     for so_line in doc.items:
+#         boms = frappe.get_all(
+#             "BOM",
+#             filters={"item": so_line.item_code, "is_active": 1, "docstatus": 1},
+#             fields=["name"]
+#         )
+#         if not boms:
+#             continue
+
+#         # pick the right BOM
+#         if len(boms) == 1:
+#             bom_name = boms[0].name
+#         else:
+#             checked = frappe.get_all(
+#                 "BOM",
+#                 filters={"item": so_line.item_code, "custom_sales_order_automation": 1},
+#                 fields=["name"],
+#                 order_by="creation DESC",
+#                 limit_page_length=1
+#             )
+#             bom_name = checked[0].name if checked else sorted([b.name for b in boms], reverse=True)[0]
+
+#         bom = frappe.get_doc("BOM", bom_name)
+#         used_boms.add(bom_name)
+
+#         base_qty = flt(bom.quantity) or 1.0
+#         for bi in bom.items:
+#             total_qty = flt(bi.qty) / base_qty * flt(so_line.qty)
+#             warehouse = bi.source_warehouse or so_line.warehouse
+#             warehouse_qty = flt(frappe.db.get_value(
+#                 "Bin",
+#                 {"item_code": bi.item_code, "warehouse": warehouse},
+#                 "actual_qty"
+#             ) or 0.0)
+#             warehouse_uom = frappe.db.get_value(
+#                 "Bin",
+#                 {"item_code": bi.item_code, "warehouse": warehouse},
+#                 "stock_uom"
+#             ) or None
+
+#             # add raw material line
+#             dn.append("custom_raw_material_items", {
+#                 "item": bi.item_code,
+#                 "uom": bi.uom,
+#                 "qty": total_qty / bom.quantity,
+#                 "warehouse": warehouse,
+#                 "warehouse_qty": warehouse_qty,
+#                 "weight": total_qty,
+#                 "stock_uom": warehouse_uom,
+#             })
+
+#             # prepare Stock Entry line
+#             material_issue_items.append({
+#                 "item_code": bi.item_code,
+#                 "qty": total_qty / bom.quantity,
+#                 "uom": bi.uom,
+#                 "stock_uom": bi.get("stock_uom"),
+#                 "conversion_factor": flt(bi.get("conversion_factor", 1)),
+#                 "s_warehouse": warehouse,
+#             })
+
+#     # 5️⃣ Record which BOMs were used
+#     dn.custom_bom_used = ", ".join(sorted(used_boms))
+
+#     # 6️⃣ Finalize DN (draft)
+#     dn.insert(ignore_permissions=True)
+#     frappe.msgprint(f"✅ Delivery Note created: {dn.name}")
+
+#     # --- FG stock check (after dn.insert) ---
+#     fg_ok = True
+#     for line in dn.items:
+#         available = flt(frappe.db.get_value(
+#             "Bin",
+#             {"item_code": line.item_code, "warehouse": line.warehouse},
+#             "actual_qty"
+#         ) or 0.0)
+#         if available < flt(line.qty):
+#             fg_ok = False
+#             frappe.msgprint(
+#                 f"⚠️ Insufficient stock for Finished Good {line.item_code}: "
+#                 f"required {line.qty}, available {available}. DN stays Draft."
+#             )
+#             break
+
+#     # --- Raw material stock check (before creating SE) ---
+#     raw_ok = True
+#     for mi in material_issue_items:
+#         available = flt(frappe.db.get_value(
+#             "Bin",
+#             {"item_code": mi["item_code"], "warehouse": mi["s_warehouse"]},
+#             "actual_qty"
+#         ) or 0.0)
+#         if available < flt(mi["qty"]):
+#             raw_ok = False
+#             frappe.msgprint(
+#                 f"⚠️ Insufficient stock for Raw Material {mi['item_code']}: "
+#                 f"required {mi['qty']}, available {available}. Stock Entry will be skipped."
+#             )
+#             break
+
+#     # 7️⃣ Create & submit Material Issue only if **both** checks pass
+#     if material_issue_items and fg_ok and raw_ok:
+#         se = frappe.new_doc("Stock Entry")
+#         se.stock_entry_type = "Material Issue"
+#         se.purpose = "Material Issue"
+#         se.company = doc.company
+#         se.set_posting_time = 1
+#         se.posting_date = today()
+#         se.custom_linked_delivery_note = dn.name
+
+#         for mi in material_issue_items:
+#             se.append("items", mi)
+
+#         se.insert(ignore_permissions=True)
+#         se.submit()
+#         dn.custom_stock_entry_linked = se.name
+#         dn.custom_rm_stock_status = "Sufficient"
+#         frappe.msgprint(f"✅ Stock Entry submitted: {se.name}")
+#     else:
+#         dn.custom_rm_stock_status = "Insufficient (Material Issue skipped)"
+
+#     # 8️⃣ Submit or leave DN draft based on FG check
+#     if fg_ok:
+#         dn.custom_stock_status = "Sufficient"
+#         dn.submit()
+#         frappe.msgprint(f"✅ Delivery Note submitted: {dn.name}")
+#     else:
+#         dn.custom_stock_status = "Insufficient"
+#         # already msgprinted above
+
+#     dn.save(ignore_permissions=True)
+
+
 def create_and_process_delivery_note(doc, method):
-    # Only for Shopify orders
+    # Only run for Shopify orders
     if not doc.shopify_order_id:
         return
 
-    # 1️⃣ Create DN draft
+    # ―――――――――――――――――――――――――――――――――
+    #  UOM‐to‐base conversion map (all in grams)
+    UOM_CONVERSION = {
+        "g": 1,
+        "gram": 1,
+        "grams": 1,
+        "gm": 1,
+        "kg": 1000,
+        "kgs": 1000,
+        "kilogram": 1000,
+        "kilograms": 1000,
+    }
+
+    def normalize_uom(uom_str):
+        """
+        Returns how many “base units (grams)” 1 unit of uom_str represents.
+        If uom_str is unknown, fallback to 1.
+        """
+        return UOM_CONVERSION.get(uom_str.strip().lower(), 1)
+    # ―――――――――――――――――――――――――――――――――
+
+    # 1️⃣ Create a new Delivery Note as Draft
     dn = make_delivery_note(doc.name)
 
-    # 2️⃣ Assign the very first Branch
+    # 2️⃣ Assign the very first Branch (by creation date)
     branch = frappe.get_all(
         "Branch",
         fields=["name"],
@@ -102,117 +284,157 @@ def create_and_process_delivery_note(doc, method):
         frappe.throw("No Branch found – cannot create Delivery Note.")
     dn.branch = branch[0].name
 
-    # 3️⃣ Tag & stamp
+    # 3️⃣ Tag & stamp custom fields on the Delivery Note
     dn.custom_delivery_note_category = "Ecommerce-Blending"
     dn.set_posting_time = 1
     dn.posting_date = today()
 
-    # 4️⃣ Explode each SO line via its BOM
-    material_issue_items = []
+    # 4️⃣ “Explode” each Sales Order line via its BOM
+    material_issue_items = []  # we will build Stock Entry lines here
     used_boms = set()
 
     for so_line in doc.items:
+        # Find active, submitted BOMs for this SO line’s item
         boms = frappe.get_all(
             "BOM",
             filters={"item": so_line.item_code, "is_active": 1, "docstatus": 1},
             fields=["name"]
         )
         if not boms:
+            # No BOM for this item → skip
             continue
 
-        # pick the right BOM
+        # If exactly one BOM, pick it.
+        # Otherwise, pick the BOM flagged with custom_sales_order_automation=1
+        # (latest created), or fallback to highest‐lex name.
         if len(boms) == 1:
             bom_name = boms[0].name
         else:
             checked = frappe.get_all(
                 "BOM",
-                filters={"item": so_line.item_code, "custom_sales_order_automation": 1},
+                filters={
+                    "item": so_line.item_code,
+                    "custom_sales_order_automation": 1
+                },
                 fields=["name"],
                 order_by="creation DESC",
                 limit_page_length=1
             )
-            bom_name = checked[0].name if checked else sorted([b.name for b in boms], reverse=True)[0]
+            if checked:
+                bom_name = checked[0].name
+            else:
+                bom_name = sorted([b.name for b in boms], reverse=True)[0]
 
         bom = frappe.get_doc("BOM", bom_name)
         used_boms.add(bom_name)
 
+        # “base_qty” is the quantity of FG that this BOM produces (in BOM’s UOM)
         base_qty = flt(bom.quantity) or 1.0
+
+        # For each raw‐material row (bi) in this BOM:
         for bi in bom.items:
-            total_qty = flt(bi.qty) / base_qty * flt(so_line.qty)
+            # total_qty_in_bi_uom = (bi.qty / base_qty) × so_line.qty
+            total_qty_in_bi_uom = flt(bi.qty) / base_qty * flt(so_line.qty)
+
+            # Determine which warehouse to pull from
             warehouse = bi.source_warehouse or so_line.warehouse
+
+            # “warehouse_qty” = actual_qty of Bin(item=bi.item_code, warehouse)
             warehouse_qty = flt(frappe.db.get_value(
                 "Bin",
                 {"item_code": bi.item_code, "warehouse": warehouse},
                 "actual_qty"
             ) or 0.0)
+
+            # “stock_uom” is the UOM in which the Bin holds stock for this item
             warehouse_uom = frappe.db.get_value(
                 "Bin",
                 {"item_code": bi.item_code, "warehouse": warehouse},
                 "stock_uom"
             ) or None
 
-            # add raw material line
+            # ―――――――――――――――――――――――――――――――――
+            # Compute normalized_qty (in “stock_uom”):
+            #
+            #   original_qty = total_qty_in_bi_uom   (this is in bi.uom)
+            #   normalized_qty = original_qty × (factor(bi.uom)/factor(stock_uom))
+            #
+            # where factor(u) = how many grams 1 unit of that UOM represents.
+            qty_factor = normalize_uom(bi.uom)
+            stock_factor = normalize_uom(warehouse_uom)
+
+            if stock_factor > 0:
+                normalized_qty = total_qty_in_bi_uom * (qty_factor / stock_factor)
+            else:
+                # If warehouse_uom is missing/unrecognized, fallback:
+                normalized_qty = total_qty_in_bi_uom
+            # ―――――――――――――――――――――――――――――――――
+
+            # Add a child‐row to custom_raw_material_items on the DN
             dn.append("custom_raw_material_items", {
                 "item": bi.item_code,
                 "uom": bi.uom,
-                "qty": total_qty / bom.quantity,
+                "qty": total_qty_in_bi_uom,
                 "warehouse": warehouse,
                 "warehouse_qty": warehouse_qty,
-                "weight": total_qty,
+                "normalized_qty": normalized_qty,  # in stock_uom
+                "weight": total_qty_in_bi_uom,
                 "stock_uom": warehouse_uom,
             })
 
-            # prepare Stock Entry line
+            # Prepare the Stock Entry “Material Issue” line using normalized_qty
             material_issue_items.append({
                 "item_code": bi.item_code,
-                "qty": total_qty / bom.quantity,
-                "uom": bi.uom,
-                "stock_uom": bi.get("stock_uom"),
-                "conversion_factor": flt(bi.get("conversion_factor", 1)),
+                "qty": normalized_qty,          # in stock_uom
+                "uom": warehouse_uom,           # stock_uom
+                "stock_uom": warehouse_uom,
+                "conversion_factor": 1.0,        # already in stock_uom
                 "s_warehouse": warehouse,
             })
 
-    # 5️⃣ Record which BOMs were used
+    # 5️⃣ Record which BOMs were used (for traceability)
     dn.custom_bom_used = ", ".join(sorted(used_boms))
 
-    # 6️⃣ Finalize DN (draft)
+    # 6️⃣ Insert the Delivery Note as Draft
     dn.insert(ignore_permissions=True)
     frappe.msgprint(f"✅ Delivery Note created: {dn.name}")
 
-    # --- FG stock check (after dn.insert) ---
+    # ―――――――――――――――――――――――――――――――――
+    # 7️⃣ Finished Good (FG) stock check (on dn.items):
     fg_ok = True
     for line in dn.items:
-        available = flt(frappe.db.get_value(
+        available_fg = flt(frappe.db.get_value(
             "Bin",
             {"item_code": line.item_code, "warehouse": line.warehouse},
             "actual_qty"
         ) or 0.0)
-        if available < flt(line.qty):
+
+        if available_fg < flt(line.qty):
             fg_ok = False
             frappe.msgprint(
                 f"⚠️ Insufficient stock for Finished Good {line.item_code}: "
-                f"required {line.qty}, available {available}. DN stays Draft."
+                f"required {line.qty}, available {available_fg}. DN will remain Draft."
             )
             break
 
-    # --- Raw material stock check (before creating SE) ---
-    raw_ok = True
-    for mi in material_issue_items:
-        available = flt(frappe.db.get_value(
-            "Bin",
-            {"item_code": mi["item_code"], "warehouse": mi["s_warehouse"]},
-            "actual_qty"
-        ) or 0.0)
-        if available < flt(mi["qty"]):
-            raw_ok = False
+    # 8️⃣ Raw Material (RM) stock check (on child table “custom_raw_material_items”):
+    rm_ok = True
+    for rm_row in dn.custom_raw_material_items:
+        # If Bin’s available stock (warehouse_qty) is less than normalized_qty → insufficient
+        if flt(rm_row.warehouse_qty) < flt(rm_row.normalized_qty):
+            print("WAREHOUSE QTY AND NORMAL QTY",flt(rm_row.warehouse_qty),flt(rm_row.normalized_qty),"\n\n\n\n")
+            rm_ok = False
             frappe.msgprint(
-                f"⚠️ Insufficient stock for Raw Material {mi['item_code']}: "
-                f"required {mi['qty']}, available {available}. Stock Entry will be skipped."
+                f"⚠️ Insufficient stock for Raw Material {rm_row.item}:\n"
+                f"→ Required ({rm_row.qty} {rm_row.uom}) "
+                f"≈ {rm_row.normalized_qty:.2f} {rm_row.stock_uom},\n"
+                f"→ Available {rm_row.warehouse_qty:.2f} {rm_row.stock_uom}.\n"
+                f"Material Issue will be skipped."
             )
             break
 
-    # 7️⃣ Create & submit Material Issue only if **both** checks pass
-    if material_issue_items and fg_ok and raw_ok:
+    # 9️⃣ Create & Submit “Material Issue” Stock Entry only if both fg_ok and rm_ok are True
+    if material_issue_items and fg_ok and rm_ok:
         se = frappe.new_doc("Stock Entry")
         se.stock_entry_type = "Material Issue"
         se.purpose = "Material Issue"
@@ -226,22 +448,30 @@ def create_and_process_delivery_note(doc, method):
 
         se.insert(ignore_permissions=True)
         se.submit()
+
         dn.custom_stock_entry_linked = se.name
         dn.custom_rm_stock_status = "Sufficient"
-        frappe.msgprint(f"✅ Stock Entry submitted: {se.name}")
+        frappe.msgprint(f"✅ Stock Entry (Material Issue) submitted: {se.name}")
     else:
-        dn.custom_rm_stock_status = "Insufficient (Material Issue skipped)"
+        print("fg and rm",fg_ok,rm_ok,"\n\n\n")
+        if rm_ok:
+            dn.custom_rm_stock_status = "Sufficient"
+        else:
+            dn.custom_rm_stock_status = "Insufficient"
 
-    # 8️⃣ Submit or leave DN draft based on FG check
+
+    # 🔟 Finally, Submit or leave DN as Draft based on FG check
     if fg_ok:
         dn.custom_stock_status = "Sufficient"
         dn.submit()
         frappe.msgprint(f"✅ Delivery Note submitted: {dn.name}")
     else:
         dn.custom_stock_status = "Insufficient"
-        # already msgprinted above
+        # (The warning for FG insufficiency was already shown above.)
 
+    # Save any custom fields that have changed
     dn.save(ignore_permissions=True)
+
 
 
 def compute_bom_metrics(doc, method):
