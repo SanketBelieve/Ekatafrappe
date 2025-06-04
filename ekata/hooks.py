@@ -235,6 +235,9 @@ doc_events = {
 	},
 	"BOM":{
 		"validate":"ekata.ekata.custom_scripts.shopify.shopify_settings.compute_bom_metrics"
+	},
+	"Customer":{
+		"after_insert":"ekata.ekata.custom_scripts.shopify.shopify_settings.after_insert_customer"
 	}
 }
 

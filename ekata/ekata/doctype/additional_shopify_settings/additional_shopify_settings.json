@@ -13,6 +13,8 @@
   "terms_of_delivery_and_payment",
   "payment_terms",
   "branch",
+  "company",
+  "customer_account",
   "create_stock_entry_for_sales_orders"
  ],
  "fields": [
@@ -76,13 +78,25 @@
    "fieldname": "create_stock_entry_for_sales_orders",
    "fieldtype": "Check",
    "label": "Create Stock Entry For Sales Orders"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company ",
+   "options": "Company"
+  },
+  {
+   "fieldname": "customer_account",
+   "fieldtype": "Link",
+   "label": "Customer Account",
+   "options": "Account"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-05-02 16:28:40.542559",
+ "modified": "2025-06-04 15:57:29.539808",
  "modified_by": "Administrator",
  "module": "Ekata",
  "name": "Additional Shopify Settings",

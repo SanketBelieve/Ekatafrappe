@@ -508,3 +508,34 @@ def compute_bom_metrics(doc, method):
         
     except Exception as e:
         frappe.msgprint(f"❌ Error in compute_bom_metrics: {str(e)}")
+        
+
+
+def after_insert_customer(doc, method):
+    # Step 1️⃣: Check if customer has Shopify Customer ID
+    if not doc.shopify_customer_id:
+        return  # Skip if no Shopify linkage
+
+    # Step 2️⃣: Fetch values from "Additional Shopify Settings"
+    settings = frappe.get_single("Additional Shopify Settings")
+    company = settings.company
+    customer_account = settings.customer_account
+
+    # Step 3️⃣: If both fields are present
+    if company and customer_account:
+        # Step 4️⃣: Check if this account row already exists in Customer's accounts table
+        already_exists = any(
+            (row.company == company and row.account == customer_account)
+            for row in doc.accounts
+        )
+
+        # Step 5️⃣: If not present, append new row
+        if not already_exists:
+            new_row = doc.append("accounts", {})
+            new_row.company = company
+            new_row.account = customer_account
+
+            # Step 6️⃣: Save the updated Customer doc
+            doc.save(ignore_permissions=True)
+            frappe.db.commit()  # Commit to DB
+
