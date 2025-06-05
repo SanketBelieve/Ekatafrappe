@@ -314,7 +314,6 @@ def handle_payment_entry(doc, method):
 #     dn.save(ignore_permissions=True)
 
 def create_and_process_delivery_note(doc, method):
-def create_and_process_delivery_note(doc, method):
     try:
         # Only run for Shopify orders
         if not doc.shopify_order_id:
