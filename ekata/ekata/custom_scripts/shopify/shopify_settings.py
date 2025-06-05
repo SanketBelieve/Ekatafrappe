@@ -335,19 +335,21 @@ def create_and_process_delivery_note(doc, method):
         }
 
         def normalize_uom(uom_str):
-            """
-            Returns how many “base units (grams)” 1 unit of uom_str represents.
-            If uom_str is None or unknown, fallback to 1.
-            """
             try:
                 if not uom_str:
-                    frappe.log_error(f"normalize_uom: uom_str is None or empty for SO {doc.name}", "Shopify Delivery Note Automation")
+                    frappe.log_error(
+                        title = f"normalize_uom: empty UOM in SO {doc.name}",
+                        message = frappe.get_traceback()
+                    )
                     return 1
 
                 return UOM_CONVERSION.get(uom_str.strip().lower(), 1)
 
-            except Exception as e:
-                frappe.log_error(f"normalize_uom error: {str(e)} | uom_str={uom_str} | SO={doc.name}", "Shopify Delivery Note Automation")
+            except Exception:
+                frappe.log_error(
+                    title = f"normalize_uom error in SO {doc.name}",
+                    message = f"uom_str={uom_str}\n\n{frappe.get_traceback()}"
+                )
                 return 1
         # ―――――――――――――――――――――――――――――――――
 
@@ -376,17 +378,18 @@ def create_and_process_delivery_note(doc, method):
 
         for so_line in doc.items:
             try:
-                # Find active, submitted BOMs for this SO line’s item
                 boms = frappe.get_all(
                     "BOM",
                     filters={"item": so_line.item_code, "is_active": 1, "docstatus": 1},
                     fields=["name"]
                 )
                 if not boms:
-                    frappe.log_error(f"No active BOM found for item {so_line.item_code} in SO {doc.name}", "Shopify Delivery Note Automation")
+                    frappe.log_error(
+                        title = f"No active BOM for item {so_line.item_code} in SO {doc.name}",
+                        message = frappe.get_traceback()
+                    )
                     continue
 
-                # Pick BOM
                 if len(boms) == 1:
                     bom_name = boms[0].name
                 else:
@@ -451,8 +454,11 @@ def create_and_process_delivery_note(doc, method):
                         "s_warehouse": warehouse,
                     })
 
-            except Exception as e:
-                frappe.log_error(f"Error processing BOM for item {so_line.item_code} in SO {doc.name}: {str(e)}", "Shopify Delivery Note Automation")
+            except Exception:
+                frappe.log_error(
+                    title = f"BOM processing error for item {so_line.item_code} in SO {doc.name}",
+                    message = frappe.get_traceback()
+                )
                 continue
 
         # 5️⃣ Record used BOMs
@@ -479,8 +485,11 @@ def create_and_process_delivery_note(doc, method):
                         f"required {line.qty}, available {available_fg}. DN will remain Draft."
                     )
                     break
-            except Exception as e:
-                frappe.log_error(f"FG stock check error for item {line.item_code} in DN {dn.name}: {str(e)}", "Shopify Delivery Note Automation")
+            except Exception:
+                frappe.log_error(
+                    title = f"FG stock check error for item {line.item_code} in DN {dn.name}",
+                    message = frappe.get_traceback()
+                )
                 fg_ok = False
                 break
 
@@ -498,8 +507,11 @@ def create_and_process_delivery_note(doc, method):
                         f"Material Issue will be skipped."
                     )
                     break
-            except Exception as e:
-                frappe.log_error(f"RM stock check error for item {rm_row.item} in DN {dn.name}: {str(e)}", "Shopify Delivery Note Automation")
+            except Exception:
+                frappe.log_error(
+                    title = f"RM stock check error for item {rm_row.item} in DN {dn.name}",
+                    message = frappe.get_traceback()
+                )
                 rm_ok = False
                 break
 
@@ -524,8 +536,11 @@ def create_and_process_delivery_note(doc, method):
                 dn.custom_rm_stock_status = "Sufficient"
                 frappe.msgprint(f"✅ Stock Entry (Material Issue) submitted: {se.name}")
 
-            except Exception as e:
-                frappe.log_error(f"Error creating/submitting Stock Entry for DN {dn.name}: {str(e)}", "Shopify Delivery Note Automation")
+            except Exception:
+                frappe.log_error(
+                    title = f"Stock Entry error in DN {dn.name}",
+                    message = f"SO {doc.name}\n\n{frappe.get_traceback()}"
+                )
                 dn.custom_rm_stock_status = "Error (See Logs)"
         else:
             if rm_ok:
@@ -539,8 +554,11 @@ def create_and_process_delivery_note(doc, method):
                 dn.custom_stock_status = "Sufficient"
                 dn.submit()
                 frappe.msgprint(f"✅ Delivery Note submitted: {dn.name}")
-            except Exception as e:
-                frappe.log_error(f"Error submitting DN {dn.name}: {str(e)}", "Shopify Delivery Note Automation")
+            except Exception:
+                frappe.log_error(
+                    title = f"DN submit error for DN {dn.name}",
+                    message = frappe.get_traceback()
+                )
                 dn.custom_stock_status = "Error (See Logs)"
         else:
             dn.custom_stock_status = "Insufficient"
@@ -548,45 +566,12 @@ def create_and_process_delivery_note(doc, method):
         dn.save(ignore_permissions=True)
         frappe.msgprint(f"✅ Delivery Note process finished for SO {doc.name}")
 
-    except Exception as e:
-        frappe.log_error(f"❌ Fatal error in create_and_process_delivery_note for SO {doc.name}: {str(e)}", "Shopify Delivery Note Automation")
+    except Exception:
+        frappe.log_error(
+            title = f"Fatal error in create_and_process_delivery_note for SO {doc.name}",
+            message = frappe.get_traceback()
+        )
 
-
-def compute_bom_metrics(doc, method):
-
-    try:
-        # 1️⃣ Sum raw material qty
-        total_raw_qty = flt(sum(flt(item.qty) for item in doc.items))
-        doc.custom_total_raw_material_qty = total_raw_qty
-
-        # 2️⃣ Get the RM to FG ratio
-        ratio = doc.custom_fg_to_rm_weight_uom_ration
-        if not ratio:
-            frappe.msgprint("⚠️ 'custom_fg_to_rm_weight_uom_ration' is not set or zero.")
-            return
-
-        # 3️⃣ Normalize raw material qty into FG units
-        normalized_rm_weight = total_raw_qty * ratio
-        doc.custom_rm_weight_normalized = normalized_rm_weight
-
-        # 4️⃣ Get actual FG weight
-        fg_weight = doc.custom_item_weight*doc.quantity
-        doc.custom_total_fg_weight= fg_weight
-
-        # 5️⃣ Compute loss and percentage
-        loss_qty = normalized_rm_weight - fg_weight
-        #print(f"Debug ➤ Loss Qty: {normalized_rm_weight}-{fg_weight} {loss_qty}\n\n\n")
-        doc.custom_qty_loss = loss_qty
-        loss_percentage = flt((loss_qty / normalized_rm_weight * 100) if normalized_rm_weight else 0.0)
-        doc.custom_loss_percentage = round(loss_percentage)
-
-        frappe.msgprint(f"Debug ➤ FG Weight: {fg_weight}, Normalized RM: {normalized_rm_weight}")
-
-        # ✅ Optional debug output
-        
-    except Exception as e:
-        frappe.msgprint(f"❌ Error in compute_bom_metrics: {str(e)}")
-        
 
 
 def after_insert_customer(doc, method):
