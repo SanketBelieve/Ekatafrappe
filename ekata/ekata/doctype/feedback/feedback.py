@@ -73,8 +73,8 @@ def create_feedback_from_opportunity(opportunity_name):
             "items",
             {
                 "item": item.item_code,
-                "qty": item.qty,
-                "rate": item.base_rate,
+                "qty": item.qty or 1,
+                "rate": item.base_rate or 0,
                 "amount": item.qty * item.base_rate,
             },
         )

@@ -594,3 +594,39 @@ def after_insert_customer(doc, method):
             doc.save(ignore_permissions=True)
             frappe.db.commit()  # Commit to DB
 
+
+
+def compute_bom_metrics(doc, method):
+
+    try:
+        # 1️⃣ Sum raw material qty
+        total_raw_qty = flt(sum(flt(item.qty) for item in doc.items))
+        doc.custom_total_raw_material_qty = total_raw_qty
+
+        # 2️⃣ Get the RM to FG ratio
+        ratio = doc.custom_fg_to_rm_weight_uom_ration
+        if not ratio:
+            frappe.msgprint("⚠️ 'custom_fg_to_rm_weight_uom_ration' is not set or zero.")
+            return
+
+        # 3️⃣ Normalize raw material qty into FG units
+        normalized_rm_weight = total_raw_qty * ratio
+        doc.custom_rm_weight_normalized = normalized_rm_weight
+
+        # 4️⃣ Get actual FG weight
+        fg_weight = doc.custom_item_weight*doc.quantity
+        doc.custom_total_fg_weight= fg_weight
+
+        # 5️⃣ Compute loss and percentage
+        loss_qty = normalized_rm_weight - fg_weight
+        #print(f"Debug ➤ Loss Qty: {normalized_rm_weight}-{fg_weight} {loss_qty}\n\n\n")
+        doc.custom_qty_loss = loss_qty
+        loss_percentage = flt((loss_qty / normalized_rm_weight * 100) if normalized_rm_weight else 0.0)
+        doc.custom_loss_percentage = round(loss_percentage)
+
+        frappe.msgprint(f"Debug ➤ FG Weight: {fg_weight}, Normalized RM: {normalized_rm_weight}")
+
+        # ✅ Optional debug output
+        
+    except Exception as e:
+        frappe.msgprint(f"❌ Error in compute_bom_metrics: {str(e)}")
