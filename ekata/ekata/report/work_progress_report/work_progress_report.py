@@ -4,7 +4,7 @@ import frappe
 def execute(filters=None):
     filters = filters or {}
 
-    # 1. build WHERE clauses
+    # 1. Build WHERE clauses
     conditions = ["ts.docstatus = 1"]
     if filters.get("employee"):
         conditions.append("ts.employee = %(employee)s")
@@ -15,35 +15,22 @@ def execute(filters=None):
 
     where_clause = " AND ".join(conditions)
 
-    # 2. pull data (note: correct doctype table names, no posting_date)
+    # 2. Pull data (including creation as posting_date)
     data = frappe.db.sql(
         f"""
         SELECT
             ts.name                       AS timesheet,
             ts.employee                   AS employee,
             ts.custom_designation         AS custom_designation,
+            ts.creation                   AS posting_date,
             td.activity_type              AS activity_type,
             td.from_time                  AS from_time,
             td.to_time                    AS to_time,
             td.custom_expected_to_time    AS expected_to_time,
-
-            /* compute delay in hours */
-            CASE
-              WHEN td.to_time > td.custom_expected_to_time THEN
-                ROUND(
-                  TIMESTAMPDIFF(
-                    SECOND,
-                    td.custom_expected_to_time,
-                    td.to_time
-                  ) / 3600
-                , 2)
-              ELSE 0
-            END                            AS custom_delay,
-
+            td.custom_delay               AS custom_delay,
             td.custom_remarks             AS custom_remarks,
             td.custom_impact              AS custom_impact,
-            td.custom_status              AS custom_status,
-            td.completed                  AS completed
+            td.custom_status              AS custom_status
 
         FROM `tabTimesheet Detail` td
         JOIN `tabTimesheet` ts
@@ -53,12 +40,12 @@ def execute(filters=None):
           td.from_time,
           ts.name,
           td.idx
-    """,
+        """,
         filters,
         as_dict=True,
     )
 
-    # 3. define your columns
+    # 3. Define columns (with Posting Date)
     columns = [
         {
             "label": "Timesheet",
@@ -80,6 +67,12 @@ def execute(filters=None):
             "fieldtype": "Link",
             "options": "Designation",
             "width": 120,
+        },
+        {
+            "label": "Posting Date",
+            "fieldname": "posting_date",
+            "fieldtype": "Datetime",
+            "width": 140,
         },
         {
             "label": "Activity Type",
@@ -128,12 +121,6 @@ def execute(filters=None):
             "fieldname": "custom_status",
             "fieldtype": "Data",
             "width": 100,
-        },
-        {
-            "label": "Completed",
-            "fieldname": "completed",
-            "fieldtype": "Check",
-            "width": 80,
         },
     ]
 
