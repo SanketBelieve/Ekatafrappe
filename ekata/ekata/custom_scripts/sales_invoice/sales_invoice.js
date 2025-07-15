@@ -1,5 +1,5 @@
 frappe.ui.form.on("Sales Invoice", "refresh", function(frm) {
-    
+
 	var wrapper = frm.get_field("preview_html").$wrapper;
 	var is_viewable = frappe.utils.is_image_file(frm.doc.attachment);
 

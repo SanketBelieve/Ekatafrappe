@@ -1,9 +1,10 @@
 import frappe
+
 # from frappe.utils import flt
 # from erpnext.controllers.taxes_and_totals import calculate_taxes_and_totals
 
 # def custom_calculate_totals(self):
-    
+
 #     shipping_charges = 0
 #     for courier in self.doc.courier_charges_and_others:
 #         shipping_charges = shipping_charges + courier.amount
@@ -65,7 +66,8 @@ import frappe
 
 #     self.set_rounded_total()
 
-def validate(self,method = None):
+
+def validate(self, method=None):
     pass
     # if self.naming_series == "EEPL/E/.##./.FY.":
     #     if not frappe.db.exists('Sales Invoice', 'EEPL/E/14/22-23'):

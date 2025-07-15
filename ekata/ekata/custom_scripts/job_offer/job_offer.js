@@ -1,5 +1,5 @@
 frappe.ui.form.on("Job Offer", "refresh", function(frm) {
-    
+
 	var wrapper = frm.get_field("preview_html").$wrapper;
 	var is_viewable = frappe.utils.is_image_file(frm.doc.attachment);
 
@@ -10,5 +10,5 @@ frappe.ui.form.on("Job Offer", "refresh", function(frm) {
 		wrapper.html('<div class="img_preview">\
 			<img class="img-responsive" src="'+frm.doc.attachment+'"></img>\
 			</div>');
-	} 
+	}
 });

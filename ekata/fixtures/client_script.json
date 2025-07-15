@@ -2,6 +2,50 @@
  {
   "docstatus": 0,
   "doctype": "Client Script",
+  "dt": "Sales Invoice",
+  "enabled": 1,
+  "modified": "2025-06-04 16:25:25.721866",
+  "module": null,
+  "name": "CQI-GST unregistered Customers",
+  "script": "function set_place_of_supply_and_tax(frm) {\r\n    frappe.call({\r\n        method: \"frappe.client.get\",\r\n        args: {\r\n            doctype: \"Customer\",\r\n            name: frm.doc.customer\r\n        },\r\n        callback: function(r) {\r\n            if (r.message) {\r\n                let customer_group = r.message.customer_group;\r\n                let gst_category = r.message.gst_category;\r\n\r\n                if (customer_group === \"CQI\" && gst_category === \"Unregistered\") {\r\n                    // Wait till address loads\r\n                    setTimeout(() => {\r\n                        frm.set_value(\"place_of_supply\", \"29-Karnataka\");\r\n                        frm.set_value(\"taxes_and_charges\", \"Output GST In-state - EEPL\");  // Update template name if needed\r\n                    }, 800); // Delay ensures ERPNext's internal autofill finishes\r\n                }\r\n            }\r\n        }\r\n    });\r\n}\r\n\r\nfrappe.ui.form.on(\"Sales Invoice\", {\r\n    customer: function(frm) {\r\n        if (frm.doc.customer) {\r\n            set_place_of_supply_and_tax(frm);\r\n        }\r\n    },\r\n    customer_address: function(frm) {\r\n        if (frm.doc.customer) {\r\n            set_place_of_supply_and_tax(frm);\r\n        }\r\n    }\r\n});\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Payment Entry",
+  "enabled": 1,
+  "modified": "2025-06-27 16:14:56.187619",
+  "module": null,
+  "name": "Payment entry - payable",
+  "script": "frappe.ui.form.on('Payment Entry', {\r\n    onload: function(frm) {\r\n        frm.trigger('force_axis_account');\r\n    },\r\n    payment_type: function(frm) {\r\n        frm.trigger('force_axis_account');\r\n    },\r\n    party_type: function(frm) {\r\n        frm.trigger('force_axis_account');\r\n    },\r\n\r\n    force_axis_account: function(frm) {\r\n        // Only change if it's a payment to a Supplier\r\n        if (\r\n            frm.doc.payment_type === 'Pay' &&\r\n            frm.doc.party_type === 'Supplier'\r\n        ) {\r\n            frm.set_value('paid_from', 'Axis New - EEPL');\r\n        }\r\n    }\r\n});\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Expense Claim",
+  "enabled": 1,
+  "modified": "2025-07-08 15:49:27.581210",
+  "module": null,
+  "name": "Expense claim- Hide \"Others\"",
+  "script": "frappe.ui.form.on('Expense Claim', {\r\n    refresh: function(frm) {\r\n        // Remove disabled options from dropdown\r\n        frm.fields_dict.expenses.grid.grid_rows.forEach(row => {\r\n            const expenseType = row.doc.expense_type;\r\n            if (expenseType && expenseType.includes('Others')) {\r\n                frappe.model.set_value(row.doc.doctype, row.doc.name, 'expense_type', '');\r\n            }\r\n            \r\n            const field = row.fields_dict.expense_type;\r\n            if (field) {\r\n                field.df.options = field.df.options.filter(opt => \r\n                    !opt.includes('Others')\r\n                );\r\n                field.refresh();\r\n            }\r\n        });\r\n    }\r\n});\r\n\r\nfrappe.ui.form.on('Expense Claim Detail', {\r\n    expense_type: function(frm, cdt, cdn) {\r\n        const row = frappe.get_doc(cdt, cdn);\r\n        if (row.expense_type === 'Others') {\r\n            frappe.msgprint(__('This expense type is disabled'));\r\n            frappe.model.set_value(cdt, cdn, 'expense_type', '');\r\n        }\r\n    }\r\n});",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Shipment",
+  "enabled": 0,
+  "modified": "2025-07-11 15:05:58.227228",
+  "module": null,
+  "name": "Shipment - Delivery note",
+  "script": "frappe.ui.form.on('Shipment Detail', {\r\n    onload: function(frm) {\r\n        frm.set_df_property('delivery_note', 'reqd', 0);\r\n    }\r\n});\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
   "dt": "Stock Entry",
   "enabled": 0,
   "modified": "2025-05-13 17:19:29.486764",

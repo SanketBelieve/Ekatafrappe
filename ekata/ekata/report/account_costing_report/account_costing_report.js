@@ -10,7 +10,7 @@ frappe.query_reports["Account Costing Report"] = {
 			"fieldtype": "Date",
 			"width": "80",
 			"reqd": 0,
-			
+
 		},
 		{
 			"fieldname":"to_date",
@@ -18,7 +18,7 @@ frappe.query_reports["Account Costing Report"] = {
 			"fieldtype": "Date",
 			"width": "80",
 			"reqd": 0,
-			
+
 		},
 		{
 			"fieldname":"project",
@@ -27,7 +27,7 @@ frappe.query_reports["Account Costing Report"] = {
 			"options":"Project",
 			"width": "80",
 			"reqd": 0,
-			
+
 		},
 
 	]

@@ -33,23 +33,23 @@ app_license = "MIT"
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 doctype_js = {
-	"Expense Claim" : "ekata/custom_scripts/expense_claim.js",
-	"Sales Invoice" : "ekata/custom_scripts/sales_invoice/sales_invoice.js",
-	"Sales Order" : "ekata/custom_scripts/sales_order/sales_order.js",
-	"Delivery Note" : "ekata/custom_scripts/delivery_note/delivery_note.js",
-	"Employee" : "ekata/custom_scripts/employee/employee.js",
-	"Material Request" : "ekata/custom_scripts/material_request/material_request.js",
-	"Job Offer" : "ekata/custom_scripts/job_offer/job_offer.js",
-	"Stock Entry":"ekata/custom_scripts/stock_entry/stock_entry.js",
-	"Shipment":"ekata/custom_scripts/shipment/shipment.js",
-	"Purchase Order":"ekata/custom_scripts/purchase_order/purchase_order.js",
-	"Purchase Receipt":"ekata/public/js/purchase_receipt.js"
+    "Expense Claim": "ekata/custom_scripts/expense_claim.js",
+    "Sales Invoice": "ekata/custom_scripts/sales_invoice/sales_invoice.js",
+    "Sales Order": "ekata/custom_scripts/sales_order/sales_order.js",
+    "Delivery Note": "ekata/custom_scripts/delivery_note/delivery_note.js",
+    "Employee": "ekata/custom_scripts/employee/employee.js",
+    "Material Request": "ekata/custom_scripts/material_request/material_request.js",
+    "Job Offer": "ekata/custom_scripts/job_offer/job_offer.js",
+    "Stock Entry": "ekata/custom_scripts/stock_entry/stock_entry.js",
+    "Shipment": "ekata/custom_scripts/shipment/shipment.js",
+    "Purchase Order": "ekata/custom_scripts/purchase_order/purchase_order.js",
+    "Purchase Receipt": "ekata/public/js/purchase_receipt.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 doctype_list_js = {
-					"Purchase Receipt": "ekata/public/js/purchase_receipt_list.js",
-					"Attendance": "ekata/public/js/attendance_list.js",
-				   }
+    "Purchase Receipt": "ekata/public/js/purchase_receipt_list.js",
+    "Attendance": "ekata/public/js/attendance_list.js",
+}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
@@ -61,7 +61,7 @@ doctype_list_js = {
 
 # website user home page (by Role)
 # role_home_page = {
-#	"Role": "home_page"
+# 	"Role": "home_page"
 # }
 
 # Generators
@@ -93,32 +93,32 @@ doctype_list_js = {
 # Permissions evaluated in scripted ways
 
 # permission_query_conditions = {
-#	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
+# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
 # }
 #
 # has_permission = {
-#	"Event": "frappe.desk.doctype.event.event.has_permission",
+# 	"Event": "frappe.desk.doctype.event.event.has_permission",
 # }
 fixtures = [
-	# 'Custom Field',
-	# 'Property Setter',
-	# 'Print Format',
-	# 'Role',
-	# 'Letter Head',
-	# 'Print Style',
-	# 'Print Settings',
-	# 'Email Template',
-	# 'Client Script',
-	# 'Workflow',
-	# 'Workflow State',
-	# 'Notification',
-	# 'Warehouse',
-	# 'Leave Type',
-	# 'Holiday List',
-	# 'Salary Structure',
-	# 'Interview Round',
-	# 'Interview Type',
-	# 'Designation'
+    # 'Custom Field',
+    # 'Property Setter',
+    # 'Print Format',
+    # 'Role',
+    # 'Letter Head',
+    # 'Print Style',
+    # 'Print Settings',
+    # 'Email Template',
+    # 'Client Script',
+    # 'Workflow',
+    # 'Workflow State',
+    # 'Notification',
+    # 'Warehouse',
+    # 'Leave Type',
+    # 'Holiday List',
+    # 'Salary Structure',
+    # 'Interview Round',
+    # 'Interview Type',
+    # 'Designation'
 ]
 
 fixtures = [
@@ -126,7 +126,8 @@ fixtures = [
         "dt": "Custom Field",
         "filters": [
             [
-                "name", "in",
+                "name",
+                "in",
                 [
                     "Purchase Order-section_break_62",
                     "Purchase Order-subject",
@@ -134,43 +135,16 @@ fixtures = [
                     "Purchase Order-other_content",
                     "Purchase Order-authorization",
                     "Purchase Order-attachment",
-                    "Purchase Order-preview_html"
-                ]
+                    "Purchase Order-preview_html",
+                ],
             ]
-        ]
+        ],
     },
-    {
-        "dt": "Client Script"
-    },
-    {
-        "dt": "Print Format",
-        "filters": [
-            [
-                "standard", "=", 0
-            ]
-        ]
-    },
-    {
-        "dt": "Property Setter",
-        "filters": [
-            [
-                "is_system_generated", "=", 0
-            ]
-        ]
-    },
-    {
-        "dt": "Notification",
-        "filters": [
-            [
-                "is_standard", "=", 0
-            ]
-        ]
-    },
-    
-    {
-        "dt": "Server Script"
-        
-    }
+    {"dt": "Client Script"},
+    {"dt": "Print Format", "filters": [["standard", "=", 0]]},
+    {"dt": "Property Setter", "filters": [["is_system_generated", "=", 0]]},
+    {"dt": "Notification", "filters": [["is_standard", "=", 0]]},
+    {"dt": "Server Script"},
 ]
 
 # DocType Class
@@ -178,10 +152,10 @@ fixtures = [
 # Override standard doctype classes
 
 # override_doctype_class = {
-#	"ToDo": "custom_app.overrides.CustomToDo"
+# 	"ToDo": "custom_app.overrides.CustomToDo"
 # }
 override_doctype_class = {
-	"Naming Series": "ekata.ekata.custom_scripts.naming_series.naming_series.CustomNamingSeries"
+    "Naming Series": "ekata.ekata.custom_scripts.naming_series.naming_series.CustomNamingSeries"
 }
 # ekata.custom_scripts.naming_series.naming_series.get_current
 # Document Events
@@ -189,91 +163,89 @@ override_doctype_class = {
 # Hook on document methods and events
 
 # doc_events = {
-#	"*": {
-#		"on_update": "method",
-#		"on_cancel": "method",
-#		"on_trash": "method"
-#	}
+# 	"*": {
+# 		"on_update": "method",
+# 		"on_cancel": "method",
+# 		"on_trash": "method"
+# 	}
 # }
 doc_events = {
-	"Sales Invoice": {
-		"validate": "ekata.ekata.custom_scripts.sales_invoice.sales_invoice.validate",
-		"after_insert":"ekata.ekata.custom_scripts.shopify.shopify_settings.handle_sales_invoice"
-	},
-	"Purchase Order": {
-		"validate": "ekata.ekata.custom_scripts.purchase_order.purchase_order.validate"
-	},
-	"Quotation": {
-		"validate": "ekata.ekata.custom_scripts.quotation.quotation.validate",
-		"after_insert": "ekata.ekata.custom_scripts.quotation.quotation.after_insert"
-	},
-	"Sales Order": {
-		"validate": "ekata.ekata.custom_scripts.sales_order.sales_order.validate",
-		"after_insert": ["ekata.ekata.custom_scripts.sales_order.sales_order.after_insert","ekata.ekata.custom_scripts.shopify.shopify_settings.handle_sales_order"],
-		"on_submit": "ekata.ekata.custom_scripts.shopify.shopify_settings.create_and_process_delivery_note"
-	},
-	"Supplier Quotation": {
-		"validate": "ekata.ekata.custom_scripts.supplier_quotation.supplier_quotation.validate"
-	},
-	"Stock Entry": {
-		"on_submit": "ekata.ekata.custom_scripts.stock_entry.stock_entry.on_submit",
+    "Sales Invoice": {
+        "validate": "ekata.ekata.custom_scripts.sales_invoice.sales_invoice.validate",
+        "after_insert": "ekata.ekata.custom_scripts.shopify.shopify_settings.handle_sales_invoice",
+    },
+    "Purchase Order": {
+        "validate": "ekata.ekata.custom_scripts.purchase_order.purchase_order.validate"
+    },
+    "Quotation": {
+        "validate": "ekata.ekata.custom_scripts.quotation.quotation.validate",
+        "after_insert": "ekata.ekata.custom_scripts.quotation.quotation.after_insert",
+    },
+    "Sales Order": {
+        "validate": "ekata.ekata.custom_scripts.sales_order.sales_order.validate",
+        "after_insert": [
+            "ekata.ekata.custom_scripts.sales_order.sales_order.after_insert",
+            "ekata.ekata.custom_scripts.shopify.shopify_settings.handle_sales_order",
+        ],
+        "on_submit": "ekata.ekata.custom_scripts.shopify.shopify_settings.create_and_process_delivery_note",
+    },
+    "Supplier Quotation": {
+        "validate": "ekata.ekata.custom_scripts.supplier_quotation.supplier_quotation.validate"
+    },
+    "Stock Entry": {
+        "on_submit": "ekata.ekata.custom_scripts.stock_entry.stock_entry.on_submit",
         "validate": "ekata.ekata.custom_scripts.stock_entry.stock_entry.validate",
-        	
-	},
-    
-	"Material Request": {
-		"validate": "ekata.ekata.custom_scripts.material_request.material_request.validate"
-	},
-	"Stock Ledger Entry": {
-		"validate": "ekata.ekata.custom_scripts.stock_ledger_entry.stock_ledger_entry_py.validate"
-	},
-	"Opportunity": {
-		"after_insert": "ekata.ekata.custom_scripts.opportunity.opportunity.validate"
-	},
-	"Payment Entry":{
-		"after_insert": "ekata.ekata.custom_scripts.shopify.shopify_settings.handle_payment_entry"
-	},
-	"BOM":{
-		"validate":"ekata.ekata.custom_scripts.shopify.shopify_settings.compute_bom_metrics"
-	},
-	"Customer":{
-		"after_insert":"ekata.ekata.custom_scripts.shopify.shopify_settings.after_insert_customer"
-	}
+    },
+    "Material Request": {
+        "validate": "ekata.ekata.custom_scripts.material_request.material_request.validate"
+    },
+    "Stock Ledger Entry": {
+        "validate": "ekata.ekata.custom_scripts.stock_ledger_entry.stock_ledger_entry_py.validate"
+    },
+    "Opportunity": {
+        "after_insert": "ekata.ekata.custom_scripts.opportunity.opportunity.validate"
+    },
+    "Payment Entry": {
+        "after_insert": "ekata.ekata.custom_scripts.shopify.shopify_settings.handle_payment_entry"
+    },
+    "BOM": {
+        "validate": "ekata.ekata.custom_scripts.shopify.shopify_settings.compute_bom_metrics"
+    },
+    "Customer": {
+        "after_insert": "ekata.ekata.custom_scripts.shopify.shopify_settings.after_insert_customer"
+    },
 }
 
 # Scheduled Tasks
 # ---------------
 
 scheduler_events = {
-"weekly": [
-          "ekata.ekata.custom_scripts.email_queue.delete_email_queues"
-      ],
-"cron": {
-	"0 9 * * *": [
-			"ekata.ekata.custom.holiday_list.send_notifications_mail",
-		],
-		},
-# 	"all": [
-# #		"ekata.tasks.all"
-# 		# "ekata.ekata.custom.holiday_list.send_notifications_mail"
-# 		# "ekata.ekata.custom.holiday_list.getData"
-
-# 	],
-# 	# "daily": [
-	# 	#"ekata.tasks.daily"
-	# 	"ekata.custom.holiday_list.send_notifications_mail"
-	# 	],
-# 	"hourly": [
-# #		"ekata.tasks.hourly"
-# 		"ekata.custom.holiday_list.send_notifications_mail"
-# 	],
-#	"weekly": [
-#		"ekata.tasks.weekly"
-#	]
-#	"monthly": [
-#		"ekata.tasks.monthly"
-#	]
- }
+    "weekly": ["ekata.ekata.custom_scripts.email_queue.delete_email_queues"],
+    "cron": {
+        "0 9 * * *": [
+            "ekata.ekata.custom.holiday_list.send_notifications_mail",
+        ],
+    },
+    # 	"all": [
+    # #		"ekata.tasks.all"
+    # 		# "ekata.ekata.custom.holiday_list.send_notifications_mail"
+    # 		# "ekata.ekata.custom.holiday_list.getData"
+    # 	],
+    # 	# "daily": [
+    # 	#"ekata.tasks.daily"
+    # 	"ekata.custom.holiday_list.send_notifications_mail"
+    # 	],
+    # 	"hourly": [
+    # #		"ekata.tasks.hourly"
+    # 		"ekata.custom.holiday_list.send_notifications_mail"
+    # 	],
+    # 	"weekly": [
+    # 		"ekata.tasks.weekly"
+    # 	]
+    # 	"monthly": [
+    # 		"ekata.tasks.monthly"
+    # 	]
+}
 
 # Testing
 # -------
@@ -284,19 +256,19 @@ scheduler_events = {
 # ------------------------------
 #
 # override_whitelisted_methods = {
-#	"frappe.desk.doctype.event.event.get_events": "ekata.event.get_events"
+# 	"frappe.desk.doctype.event.event.get_events": "ekata.event.get_events"
 # }
 #
 override_whitelisted_methods = {
-	"erpnext.stock.doctype.material_request.material_request.make_request_for_quotation":"ekata.ekata.custom_scripts.material_request.material_request.make_request_for_quotation",
-	"erpnext.stock.doctype.purchase_receipt.purchase_receipt.make_stock_entry":"ekata.ekata.custom_scripts.purchase_receipt.purchase_receipt_py.create_stock_entry"
+    "erpnext.stock.doctype.material_request.material_request.make_request_for_quotation": "ekata.ekata.custom_scripts.material_request.material_request.make_request_for_quotation",
+    "erpnext.stock.doctype.purchase_receipt.purchase_receipt.make_stock_entry": "ekata.ekata.custom_scripts.purchase_receipt.purchase_receipt_py.create_stock_entry",
 }
 
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
 # along with any modifications made in other Frappe apps
 # override_doctype_dashboards = {
-#	"Task": "ekata.task.get_dashboard_data"
+# 	"Task": "ekata.task.get_dashboard_data"
 # }
 
 # exempt linked doctypes from being automatically cancelled
@@ -308,30 +280,27 @@ override_whitelisted_methods = {
 # --------------------
 
 user_data_fields = [
-	{
-		"doctype": "{doctype_1}",
-		"filter_by": "{filter_by}",
-		"redact_fields": ["{field_1}", "{field_2}"],
-		"partial": 1,
-	},
-	{
-		"doctype": "{doctype_2}",
-		"filter_by": "{filter_by}",
-		"partial": 1,
-	},
-	{
-		"doctype": "{doctype_3}",
-		"strict": False,
-	},
-	{
-		"doctype": "{doctype_4}"
-	}
+    {
+        "doctype": "{doctype_1}",
+        "filter_by": "{filter_by}",
+        "redact_fields": ["{field_1}", "{field_2}"],
+        "partial": 1,
+    },
+    {
+        "doctype": "{doctype_2}",
+        "filter_by": "{filter_by}",
+        "partial": 1,
+    },
+    {
+        "doctype": "{doctype_3}",
+        "strict": False,
+    },
+    {"doctype": "{doctype_4}"},
 ]
 
 # Authentication and authorization
 # --------------------------------
 
 # auth_hooks = [
-#	"ekata.auth.validate"
+# 	"ekata.auth.validate"
 # ]
-

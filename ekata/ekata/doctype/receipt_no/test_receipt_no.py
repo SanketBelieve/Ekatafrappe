@@ -4,5 +4,6 @@
 # import frappe
 import unittest
 
+
 class TestReceiptNo(unittest.TestCase):
-	pass
+    pass

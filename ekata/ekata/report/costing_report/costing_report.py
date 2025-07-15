@@ -1,7 +1,7 @@
-
 import frappe
 from frappe import _
 from typing import Tuple
+
 
 def execute(filters=None) -> Tuple:
     columns = get_columns(filters)
@@ -19,17 +19,19 @@ def execute(filters=None) -> Tuple:
                         "voucher_no": item.voucher_no,
                         "voucher_type": item.voucher_type,
                         "project_description": item.project_description,
-                        "amount": item.debit
+                        "amount": item.debit,
                     }
                 )
             else:
-                data_dict[item.voucher_no] = [{
-                    "posting_date": item.posting_date,
-                    "voucher_no": item.voucher_no,
-                    "voucher_type": item.voucher_type,
-                    "project_description": item.project_description,
-                    "amount": item.debit
-                }]
+                data_dict[item.voucher_no] = [
+                    {
+                        "posting_date": item.posting_date,
+                        "voucher_no": item.voucher_no,
+                        "voucher_type": item.voucher_type,
+                        "project_description": item.project_description,
+                        "amount": item.debit,
+                    }
+                ]
 
             if item.voucher_no in crop_total_dict:
                 crop_total_dict[item.voucher_no] += item.debit
@@ -41,14 +43,15 @@ def execute(filters=None) -> Tuple:
         grand_total_dict[voucher_no] = total_amount
 
     for voucher_no, items in data_dict.items():
-        items.append({
-            "posting_date": "",
-            "voucher_no": "",
-            "voucher_type": "",
-            "project_description": "Grand Total",
-            "amount": grand_total_dict[voucher_no]
-
-        })
+        items.append(
+            {
+                "posting_date": "",
+                "voucher_no": "",
+                "voucher_type": "",
+                "project_description": "Grand Total",
+                "amount": grand_total_dict[voucher_no],
+            }
+        )
 
     data = []
     for voucher_no, items in data_dict.items():
@@ -62,32 +65,35 @@ def get_conditions(filters):
     if filters.get("from_date") and filters.get("to_date"):
         conditions += f" and gl.posting_date between '{filters.get('from_date')}' and '{filters.get('to_date')}'"
     if filters.get("project"):
-      conditions += f" and gl.project = '{filters.get('project')}'"
-    
+        conditions += f" and gl.project = '{filters.get('project')}'"
+
     return conditions
 
-def get_data(filters,conditions):
 
-    data = frappe.db.sql(f"""SELECT gl.name as gl_entry,
+def get_data(filters, conditions):
+
+    data = frappe.db.sql(
+        f"""SELECT gl.name as gl_entry,
             gl.posting_date,
             gl.voucher_type,
-            gl.voucher_no, 
+            gl.voucher_no,
             gl.debit,gl.credit
-            
-            FROM `tabGL Entry` gl 
-            
-            WHERE  voucher_type not in ('Sales Invoice','Payment Entry','Stock Reconciliation','Stock Entry') 
+
+            FROM `tabGL Entry` gl
+
+            WHERE  voucher_type not in ('Sales Invoice','Payment Entry','Stock Reconciliation','Stock Entry')
             AND  1=1 {conditions}
             ORDER BY posting_date
-             """,as_dict=1,debug=1)
-
+             """,
+        as_dict=1,
+        debug=1,
+    )
 
     return data
 
+
 def get_columns(filters):
     columns = [
-        
-        
         {
             "label": _("Posting Date"),
             "fieldname": "posting_date",
@@ -101,11 +107,11 @@ def get_columns(filters):
             "width": 110,
         },
         {
-                "label": _("Voucher No"),
-                "fieldname": "voucher_no",
-                "fieldtype": "Dynamic Link",
-                "options": "voucher_type",
-                "width": 170,
+            "label": _("Voucher No"),
+            "fieldname": "voucher_no",
+            "fieldtype": "Dynamic Link",
+            "options": "voucher_type",
+            "width": 170,
         },
         {
             "label": _("Voucher Type"),
@@ -121,5 +127,3 @@ def get_columns(filters):
         },
     ]
     return columns
-
-

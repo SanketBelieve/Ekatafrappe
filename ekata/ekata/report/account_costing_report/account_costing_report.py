@@ -1,7 +1,7 @@
-
 import frappe
 from frappe import _
 from typing import Tuple
+
 
 def execute(filters=None) -> Tuple:
     columns = get_columns(filters)
@@ -16,83 +16,125 @@ def get_conditions(filters):
     if filters.get("from_date") and filters.get("to_date"):
         conditions += f" and gl.posting_date between '{filters.get('from_date')}' and '{filters.get('to_date')}'"
     if filters.get("project"):
-      conditions += f" and gl.project = '{filters.get('project')}'"
-    
+        conditions += f" and gl.project = '{filters.get('project')}'"
+
     return conditions
 
-def get_data(filters,conditions):
 
-    data = frappe.db.sql(f"""SELECT gl.name as gl_entry,
+def get_data(filters, conditions):
+
+    data = frappe.db.sql(
+        f"""SELECT gl.name as gl_entry,
             gl.posting_date,
             gl.voucher_type,gl.credit,
             gl.voucher_no,gl.project,
             gl.debit
-            
-            FROM `tabGL Entry` gl 
-            
-            WHERE gl.voucher_type not in ('Sales Invoice','Payment Entry','Stock Reconciliation','Stock Entry') 
+
+            FROM `tabGL Entry` gl
+
+            WHERE gl.voucher_type not in ('Sales Invoice','Payment Entry','Stock Reconciliation','Stock Entry')
             AND  1=1 {conditions}
             ORDER BY gl.posting_date
-             """,as_dict=1,debug=1)
+             """,
+        as_dict=1,
+        debug=1,
+    )
     voucher_no_list = [item.voucher_no for item in data]
-    print(f"\n voucher_no_list--{voucher_no_list}\nlen(voucher_no_list)--{len(voucher_no_list)}\n")
+    print(
+        f"\n voucher_no_list--{voucher_no_list}\nlen(voucher_no_list)--{len(voucher_no_list)}\n"
+    )
 
     if len(voucher_no_list) == 0:
-    	frappe.throw(f"No Voucher found related {filters.get('project')} project !! ")
+        frappe.throw(f"No Voucher found related {filters.get('project')} project !! ")
     else:
-    	print(f"\n--len isn't 0--\n")
-    	jl_data = frappe.db.sql(""" 
+        print(f"\n--len isn't 0--\n")
+        jl_data = frappe.db.sql(
+            """
 	    		SELECT
 	    		 parent,project_description from `tabJournal Entry Account`
 	    		WHERE parent in {0}
-	    	""".format(tuple(voucher_no_list)),as_dict=1,debug=1)
-    	filtered_jl_list = [dictionary for dictionary in jl_data if all(value is not None for value in dictionary.values())]
-    	
-    	pi_data=frappe.db.sql("""
-    			SELECT 
+	    	""".format(
+                tuple(voucher_no_list)
+            ),
+            as_dict=1,
+            debug=1,
+        )
+        filtered_jl_list = [
+            dictionary
+            for dictionary in jl_data
+            if all(value is not None for value in dictionary.values())
+        ]
+
+        pi_data = frappe.db.sql(
+            """
+    			SELECT
     				name,project_description from `tabPurchase Invoice`
 				WHERE name in {0}
-			""".format(tuple(voucher_no_list)),as_dict=1,debug=1)
-    	filtered_pi_list = [dictionary for dictionary in pi_data if all(value is not None for value in dictionary.values())]
+			""".format(
+                tuple(voucher_no_list)
+            ),
+            as_dict=1,
+            debug=1,
+        )
+        filtered_pi_list = [
+            dictionary
+            for dictionary in pi_data
+            if all(value is not None for value in dictionary.values())
+        ]
 
-    	ec_data = frappe.db.sql(""" 
+        ec_data = frappe.db.sql(
+            """
 	    		SELECT
 	    		 name,project_description from `tabExpense Claim`
 	    		WHERE name in {0}
-	    	""".format(tuple(voucher_no_list)),as_dict=1,debug=1)
-    	filtered_ec_list = [dictionary for dictionary in ec_data if all(value is not None for value in dictionary.values())]
+	    	""".format(
+                tuple(voucher_no_list)
+            ),
+            as_dict=1,
+            debug=1,
+        )
+        filtered_ec_list = [
+            dictionary
+            for dictionary in ec_data
+            if all(value is not None for value in dictionary.values())
+        ]
 
-    	pr_data = frappe.db.sql(""" 
+        pr_data = frappe.db.sql(
+            """
 	    		SELECT
 	    		 parent,project_description from `tabPurchase Receipt Item`
 	    		WHERE parent in {0}
-	    	""".format(tuple(voucher_no_list)),as_dict=1,debug=1)
-    	filtered_pr_list = [dictionary for dictionary in pr_data if all(value is not None for value in dictionary.values())]
-    	
-    	for row in data:
-	    	for row1 in filtered_jl_list:
-	    		if row.get('voucher_no')==row1.get('parent'):
-	    			row.update({'remarks':row1.get('project_description')})
-	    	for row2 in filtered_pi_list:
-	    		if row.get('voucher_no')==row2.get('name'):
-	    			row.update({'remarks':row2.get('project_description')})
-	    	for row3 in filtered_ec_list:
-	    		if row.get('voucher_no')==row3.get('name'):
-	    			row.update({'remarks':row3.get('project_description')})
-	    	for row4 in filtered_pr_list:
-	    		if row.get('voucher_no')==row4.get('parent'):
-	    			row.update({'remarks':row4.get('project_description')})
-		
+	    	""".format(
+                tuple(voucher_no_list)
+            ),
+            as_dict=1,
+            debug=1,
+        )
+        filtered_pr_list = [
+            dictionary
+            for dictionary in pr_data
+            if all(value is not None for value in dictionary.values())
+        ]
 
-
-
+        for row in data:
+            for row1 in filtered_jl_list:
+                if row.get("voucher_no") == row1.get("parent"):
+                    row.update({"remarks": row1.get("project_description")})
+            for row2 in filtered_pi_list:
+                if row.get("voucher_no") == row2.get("name"):
+                    row.update({"remarks": row2.get("project_description")})
+            for row3 in filtered_ec_list:
+                if row.get("voucher_no") == row3.get("name"):
+                    row.update({"remarks": row3.get("project_description")})
+            for row4 in filtered_pr_list:
+                if row.get("voucher_no") == row4.get("parent"):
+                    row.update({"remarks": row4.get("project_description")})
 
     return data
 
+
 def get_columns(filters):
     columns = [
-        
-        
         {
             "label": _("Posting Date"),
             "fieldname": "posting_date",
@@ -112,11 +154,11 @@ def get_columns(filters):
             "width": 110,
         },
         {
-                "label": _("Voucher No"),
-                "fieldname": "voucher_no",
-                "fieldtype": "Dynamic Link",
-                "options": "voucher_type",
-                "width": 170,
+            "label": _("Voucher No"),
+            "fieldname": "voucher_no",
+            "fieldtype": "Dynamic Link",
+            "options": "voucher_type",
+            "width": 170,
         },
         {
             "label": _("Voucher Type"),
@@ -135,14 +177,9 @@ def get_columns(filters):
             "fieldname": "credit",
             "fieldtype": "Float",
             "width": 180,
-        }
+        },
     ]
     return columns
-
-
-
-
-
 
 
 # # Copyright (c) 2023, kiran.c@indictrans.in and contributors
@@ -153,7 +190,6 @@ def get_columns(filters):
 # from frappe.utils import date_diff, flt, getdate
 
 
-
 # def execute(filters=None):
 # 	columns = get_columns(filters)
 # 	#conditions = get_conditions(filters)
@@ -161,32 +197,32 @@ def get_columns(filters):
 # 	return columns, data, None
 
 # def get_data(filters):
-	
-# 	gl_data = frappe.db.sql("""SELECT 
+
+# 	gl_data = frappe.db.sql("""SELECT
 #                 gl.voucher_no,gl.voucher_type,gl.posting_date,gl.project,gl.debit as gl_debit,
 #                 gl.credit as gl_credit
-#             FROM 
-#                 `tabGL Entry`gl 
-            
-#             WHERE 
+#             FROM
+#                 `tabGL Entry`gl
+
+#             WHERE
 #                 voucher_type not in ('Sales Invoice','Payment Entry','Stock Reconciliation','Stock Entry')
 # 	        ORDER BY gl.voucher_no
 #                """.format(),as_dict=1,debug=1)
-               
+
 # 	voucher_no_list = [item.voucher_no for item in gl_data]
 # 	# print(f"\n\ndata--{data}\n\n voucher_no_list--{voucher_no_list}")
 
-# 	jl_data = frappe.db.sql("""	SELECT 
+# 	jl_data = frappe.db.sql("""	SELECT
 # 			jl.name,jla.debit,jla.credit,jl.total_debit,jl.docstatus,
-# 			jl.total_credit,jl.posting_date,jla.project_description 
-# 		FROM 
-# 			`tabJournal Entry` jl 
-# 		JOIN 
-# 			`tabJournal Entry Account` jla 
-# 		ON 
-# 			jl.name=jla.parent 
-# 		WHERE 
-# 			jl.name in {0} 
+# 			jl.total_credit,jl.posting_date,jla.project_description
+# 		FROM
+# 			`tabJournal Entry` jl
+# 		JOIN
+# 			`tabJournal Entry Account` jla
+# 		ON
+# 			jl.name=jla.parent
+# 		WHERE
+# 			jl.name in {0}
 # 		""".format(tuple(voucher_no_list)),as_dict=1,debug=1)
 # 		# """.format(filters.get('from_date'), filters.get('to_date'),filters.get('project'),tuple(voucher_no_list)),as_dict=1,debug=1)
 
@@ -195,32 +231,32 @@ def get_columns(filters):
 # 	# expense_data = frappe.db.sql(""" SELECT
 # 	# 		ec.name,ecd.description,ecd.amount,
 # 	# 		ec.total_claimed_amount,ec.posting_date
-# 	# 	FROM 
-# 	# 		`tabExpense Claim` ec 
-# 	# 	JOIN 
-# 	# 		`tabExpense Claim Detail`ecd 
-# 	# 	ON 
+# 	# 	FROM
+# 	# 		`tabExpense Claim` ec
+# 	# 	JOIN
+# 	# 		`tabExpense Claim Detail`ecd
+# 	# 	ON
 # 	# 		ec.name=ecd.parent
 # 	# 	WHERE
 # 	# 		 ec.status not in ('Cancelled','Return','Rejected')
 # 	# """,as_dict=1,debug=1)
 
 # 	# pi_data = frappe.db.sql(""" SELECT
-# 	# 		pi.name,pi.project,pii.amount,pii.rate,pi.total,pi.posting_date 
-# 	# 	FROM 
-# 	# 		`tabPurchase Invoice` pi 
+# 	# 		pi.name,pi.project,pii.amount,pii.rate,pi.total,pi.posting_date
+# 	# 	FROM
+# 	# 		`tabPurchase Invoice` pi
 # 	# 	JOIN
-# 	# 		`tabPurchase Invoice Item` pii 
-# 	# 	ON 
-# 	# 		pi.name=pii.parent 
+# 	# 		`tabPurchase Invoice Item` pii
+# 	# 	ON
+# 	# 		pi.name=pii.parent
 # 	# 	WHERE
 # 	# 		pi.status not in ('Cancelled','Return')""",as_dict=1,debug=1)
-	
+
 # 	# data = []
 # 	# for voucher_no, items in jl_data:
 # 	# 	data.extend(items)
 
-	
+
 # 	# for row in data:
 # 	for row1 in gl_data:
 # 		total =0.0
@@ -236,8 +272,6 @@ def get_columns(filters):
 # 	# print(f"\n\n final_data--{gl_data}\n\n")
 # 	return gl_data
 
-	
-	
 
 # def get_columns(filters):
 # 	columns = [
@@ -282,18 +316,15 @@ def get_columns(filters):
 # 	return columns
 
 
-
-
-
-# # data = frappe.db.sql("""SELECT 
+# # data = frappe.db.sql("""SELECT
 # #                 gl.voucher_no,gl.voucher_type,gl.posting_date,gl.project
-# #             FROM 
-# #                 `tabGL Entry`gl 
-            
-# #             WHERE 
+# #             FROM
+# #                 `tabGL Entry`gl
+
+# #             WHERE
 # #                 voucher_type not in ('Sales Invoice','Payment Entry','Stock Reconciliation','Stock Entry')
-# # 	           	AND posting_date BETWEEN '{0}' and '{1}' 
-# # 	    		AND gl.project ='{2}'      
+# # 	           	AND posting_date BETWEEN '{0}' and '{1}'
+# # 	    		AND gl.project ='{2}'
 # #                """.format(filters.get('from_date'), filters.get('to_date'),filters.get('project')),as_dict=1,debug=1)
 # #                # """.format(filters.get('from_date'), filters.get('to_date'),filters.get('project')),as_dict=1,debug=1)
-# # 	
+# #

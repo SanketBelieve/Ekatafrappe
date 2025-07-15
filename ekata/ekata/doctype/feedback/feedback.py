@@ -1,6 +1,7 @@
 import frappe
 from frappe.model.document import Document
 
+
 class Feedback(Document):
     def validate(self):
         """Automatically compute amount for child table and total_amount"""
@@ -9,6 +10,7 @@ class Feedback(Document):
             item.amount = item.qty * item.rate  # Compute amount
             total_amount += item.amount  # Sum up amounts
         self.total_amount = total_amount  # Update total amount in the main doc
+
 
 @frappe.whitelist()
 def create_feedback_from_opportunity(opportunity_name):
@@ -37,7 +39,7 @@ def create_feedback_from_opportunity(opportunity_name):
                 "parenttype": "Address",
             },
             "parent",
-            order_by="idx asc"
+            order_by="idx asc",
         )
         if lead_address_name:
             addr = frappe.get_doc("Address", lead_address_name)
@@ -51,18 +53,18 @@ def create_feedback_from_opportunity(opportunity_name):
 
     # --- Billing Address: Try Opportunity, else Lead ---
     billing_address = get_address_with_fallback(
-        opportunity_name=opportunity.name, 
-        lead_name=opportunity.party_name, 
-        address_role="billing"
+        opportunity_name=opportunity.name,
+        lead_name=opportunity.party_name,
+        address_role="billing",
     )
     if billing_address:
         feedback.opportunity_billing_address = billing_address
 
     # --- Shipping Address: Try Opportunity, else Lead ---
     shipping_address = get_address_with_fallback(
-        opportunity_name=opportunity.name, 
-        lead_name=opportunity.party_name, 
-        address_role="shipping"
+        opportunity_name=opportunity.name,
+        lead_name=opportunity.party_name,
+        address_role="shipping",
     )
     if shipping_address:
         feedback.opportunity_shipping_address = shipping_address
@@ -84,6 +86,7 @@ def create_feedback_from_opportunity(opportunity_name):
     frappe.msgprint(f"Feedback created successfully! 🎉", alert=True)
     return feedback.name
 
+
 def get_address_with_fallback(opportunity_name, lead_name, address_role):
     """
     Try to get Address of given role (billing/shipping) linked to Opportunity.
@@ -99,6 +102,7 @@ def get_address_with_fallback(opportunity_name, lead_name, address_role):
         return address_name
     return None
 
+
 def get_address_for_entity(entity_name, entity_doctype, address_role):
     """
     Return the name of the first Address linked to this entity (Opportunity/Lead)
@@ -109,23 +113,32 @@ def get_address_for_entity(entity_name, entity_doctype, address_role):
         "billing": {"is_primary_address": 1, "is_shipping_address": 0, "disabled": 0},
         "shipping": {"is_primary_address": 0, "is_shipping_address": 1, "disabled": 0},
     }
-    loose_flag = "is_primary_address" if address_role == "billing" else "is_shipping_address"
+    loose_flag = (
+        "is_primary_address" if address_role == "billing" else "is_shipping_address"
+    )
 
-    address_links = frappe.db.sql("""
+    address_links = frappe.db.sql(
+        """
         SELECT parent FROM `tabDynamic Link`
         WHERE link_doctype=%s
           AND link_name=%s
           AND parenttype='Address'
         ORDER BY idx ASC
-    """, (entity_doctype, entity_name), as_dict=1)
+    """,
+        (entity_doctype, entity_name),
+        as_dict=1,
+    )
 
     # Strict: Only single-role addresses
     for link in address_links:
         addr = frappe.get_doc("Address", link.parent)
         filters = strict_filters[address_role]
-        if (getattr(addr, "is_primary_address", 0) == filters.get("is_primary_address") and
-            getattr(addr, "is_shipping_address", 0) == filters.get("is_shipping_address") and
-            getattr(addr, "disabled", 0) == 0):
+        if (
+            getattr(addr, "is_primary_address", 0) == filters.get("is_primary_address")
+            and getattr(addr, "is_shipping_address", 0)
+            == filters.get("is_shipping_address")
+            and getattr(addr, "disabled", 0) == 0
+        ):
             return addr.name
 
     # Loose: Accept both flags true (for fallback)
@@ -141,6 +154,7 @@ def get_address_for_entity(entity_name, entity_doctype, address_role):
             return addr.name
     return None
 
+
 def get_customer_addresses(customer_name):
     """
     Returns a tuple: (billing_address_name, shipping_address_name) for a Customer.
@@ -151,7 +165,7 @@ def get_customer_addresses(customer_name):
         "Address",
         filters={"disabled": 0},
         fields=["name", "is_primary_address", "is_shipping_address", "creation"],
-        order_by="creation desc"
+        order_by="creation desc",
     )
     billing = None
     shipping = None
@@ -196,6 +210,7 @@ def get_customer_addresses(customer_name):
 
     return billing, shipping
 
+
 @frappe.whitelist()
 def create_quotation_from_feedback(feedback_name):
     """Creates a Quotation from Feedback using Customer's addresses and ensures billing/shipping aren't same if possible."""
@@ -222,15 +237,19 @@ def create_quotation_from_feedback(feedback_name):
     quotation.order_type = "Sales"  # Set dynamically if you wish
 
     for item in feedback.items:
-        quotation.append("items", {
-            "item_code": item.item,
-            "qty": item.qty,
-            "rate": item.rate,
-            "amount": item.amount,
-            "schedule_date": frappe.utils.nowdate()
-        })
+        quotation.append(
+            "items",
+            {
+                "item_code": item.item,
+                "qty": item.qty,
+                "rate": item.rate,
+                "amount": item.amount,
+                "schedule_date": frappe.utils.nowdate(),
+            },
+        )
 
     quotation.insert(ignore_permissions=True)
-    frappe.msgprint(f"Quotation {quotation.name} created for Customer {feedback.customer}.")
+    frappe.msgprint(
+        f"Quotation {quotation.name} created for Customer {feedback.customer}."
+    )
     return quotation.name
-

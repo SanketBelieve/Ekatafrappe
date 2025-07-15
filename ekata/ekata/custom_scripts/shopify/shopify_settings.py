@@ -24,12 +24,19 @@ def handle_sales_order(doc, method):
             template = frappe.get_doc("Payment Terms Template", settings.payment_terms)
             doc.payment_schedule = []
             for term in template.terms:
-                doc.append("payment_schedule", {
-                    "payment_term": term.payment_term,
-                    "due_date": frappe.utils.add_days(frappe.utils.nowdate(), term.credit_days or 0),
-                    "invoice_portion": term.invoice_portion,
-                    "payment_amount": (doc.base_rounded_total * term.invoice_portion / 100)
-                })
+                doc.append(
+                    "payment_schedule",
+                    {
+                        "payment_term": term.payment_term,
+                        "due_date": frappe.utils.add_days(
+                            frappe.utils.nowdate(), term.credit_days or 0
+                        ),
+                        "invoice_portion": term.invoice_portion,
+                        "payment_amount": (
+                            doc.base_rounded_total * term.invoice_portion / 100
+                        ),
+                    },
+                )
 
         if settings.branch:
             doc.branch = settings.branch
@@ -81,9 +88,6 @@ def handle_payment_entry(doc, method):
 
     doc.save(ignore_permissions=True)
     frappe.msgprint("✅ Shopify settings applied to Payment Entry.")
-
-
-
 
 
 # def create_and_process_delivery_note(doc, method):
@@ -365,21 +369,32 @@ def handle_payment_entry(doc, method):
 #             message=frappe.get_traceback(),
 #         )
 
+
 def create_and_process_delivery_note(doc, method):
     try:
         # Only process Shopify orders
         if not doc.shopify_order_id:
             frappe.msgprint(f"⏭️ Skipping SO {doc.name}: no shopify_order_id")
-            frappe.log_error(title="Skip Shopify hook", message=f"SO {doc.name} lacks shopify_order_id")
+            frappe.log_error(
+                title="Skip Shopify hook",
+                message=f"SO {doc.name} lacks shopify_order_id",
+            )
             return
 
         frappe.msgprint(f"🚀 Starting delivery note process for SO {doc.name}")
 
         # UOM conversion map (to grams)
         UOM_CONVERSION = {
-            "g": 1, "gram": 1, "grams": 1, "gm": 1,
-            "kg": 1000, "kgs": 1000, "kilogram": 1000, "kilograms": 1000,
+            "g": 1,
+            "gram": 1,
+            "grams": 1,
+            "gm": 1,
+            "kg": 1000,
+            "kgs": 1000,
+            "kilogram": 1000,
+            "kilograms": 1000,
         }
+
         def normalize_uom(uom_str):
             return UOM_CONVERSION.get((uom_str or "").strip().lower(), 1)
 
@@ -391,14 +406,14 @@ def create_and_process_delivery_note(doc, method):
         frappe.msgprint(f"📋 Draft DN initiated: {dn.name}")
 
         # 2️⃣ Assign first-created Branch
-        branch = frappe.get_all("Branch",
-            fields=["name"],
-            limit_page_length=1,
-            order_by="creation ASC"
+        branch = frappe.get_all(
+            "Branch", fields=["name"], limit_page_length=1, order_by="creation ASC"
         )
         if not branch:
             frappe.msgprint("❌ No Branch found – cannot create DN.")
-            frappe.log_error(title="Branch missing", message=f"SO {doc.name}: no Branch")
+            frappe.log_error(
+                title="Branch missing", message=f"SO {doc.name}: no Branch"
+            )
             return
         dn.branch = branch[0].name
         frappe.msgprint(f"🏷️ Branch set: {dn.branch}")
@@ -414,9 +429,10 @@ def create_and_process_delivery_note(doc, method):
         used_boms = set()
         for so_line in doc.items:
             try:
-                boms = frappe.get_all("BOM",
+                boms = frappe.get_all(
+                    "BOM",
                     filters={"item": so_line.item_code, "is_active": 1, "docstatus": 1},
-                    fields=["name"]
+                    fields=["name"],
                 )
                 if not boms:
                     frappe.msgprint(f"⚠️ No BOM for {so_line.item_code}")
@@ -426,11 +442,14 @@ def create_and_process_delivery_note(doc, method):
                 if len(boms) == 1:
                     bom_name = boms[0].name
                 else:
-                    flagged = frappe.get_value("BOM",
+                    flagged = frappe.get_value(
+                        "BOM",
                         {"item": so_line.item_code, "custom_sales_order_automation": 1},
-                        "name"
+                        "name",
                     )
-                    bom_name = flagged or sorted([b.name for b in boms], reverse=True)[0]
+                    bom_name = (
+                        flagged or sorted([b.name for b in boms], reverse=True)[0]
+                    )
 
                 bom = frappe.get_doc("BOM", bom_name)
                 used_boms.add(bom_name)
@@ -439,43 +458,58 @@ def create_and_process_delivery_note(doc, method):
                 for bi in bom.items:
                     qty = flt(bi.qty) / base_qty * flt(so_line.qty)
                     wh = bi.source_warehouse or so_line.warehouse
-                    wh_qty = flt(frappe.db.get_value("Bin",
-                        {"item_code": bi.item_code, "warehouse": wh},
-                        "actual_qty"
-                    ) or 0.0)
-                    wh_uom = frappe.db.get_value("Bin",
-                        {"item_code": bi.item_code, "warehouse": wh},
-                        "stock_uom"
-                    ) or bi.uom
+                    wh_qty = flt(
+                        frappe.db.get_value(
+                            "Bin",
+                            {"item_code": bi.item_code, "warehouse": wh},
+                            "actual_qty",
+                        )
+                        or 0.0
+                    )
+                    wh_uom = (
+                        frappe.db.get_value(
+                            "Bin",
+                            {"item_code": bi.item_code, "warehouse": wh},
+                            "stock_uom",
+                        )
+                        or bi.uom
+                    )
                     norm_qty = qty * (normalize_uom(bi.uom) / normalize_uom(wh_uom))
 
                     # add to raw material table
-                    dn.append("custom_raw_material_items", {
-                        "item": bi.item_code,
-                        "uom": bi.uom,
-                        "qty": qty,
-                        "warehouse": wh,
-                        "warehouse_qty": wh_qty,
-                        "normalized_qty": norm_qty,
-                        "weight": qty,
-                        "stock_uom": wh_uom,
-                    })
+                    dn.append(
+                        "custom_raw_material_items",
+                        {
+                            "item": bi.item_code,
+                            "uom": bi.uom,
+                            "qty": qty,
+                            "warehouse": wh,
+                            "warehouse_qty": wh_qty,
+                            "normalized_qty": norm_qty,
+                            "weight": qty,
+                            "stock_uom": wh_uom,
+                        },
+                    )
 
                     # prepare Stock Entry lines
-                    material_issue_items.append({
-                        "item_code": bi.item_code,
-                        "qty": norm_qty,
-                        "uom": wh_uom,
-                        "stock_uom": wh_uom,
-                        "conversion_factor": 1.0,
-                        "s_warehouse": wh,
-                    })
+                    material_issue_items.append(
+                        {
+                            "item_code": bi.item_code,
+                            "qty": norm_qty,
+                            "uom": wh_uom,
+                            "stock_uom": wh_uom,
+                            "conversion_factor": 1.0,
+                            "s_warehouse": wh,
+                        }
+                    )
 
                 frappe.msgprint(f"✅ BOM {bom_name} processed for {so_line.item_code}")
 
             except Exception:
                 err = frappe.get_traceback()
-                frappe.log_error(title=f"BOM error for {so_line.item_code}", message=err)
+                frappe.log_error(
+                    title=f"BOM error for {so_line.item_code}", message=err
+                )
                 frappe.msgprint(f"❌ Error on BOM {so_line.item_code}, see error log")
 
         dn.custom_bom_used = ", ".join(sorted(used_boms)) or "None"
@@ -485,13 +519,19 @@ def create_and_process_delivery_note(doc, method):
         # 5️⃣ FG stock check
         fg_ok = True
         for it in dn.items:
-            avail = flt(frappe.db.get_value("Bin",
-                {"item_code": it.item_code, "warehouse": it.warehouse},
-                "actual_qty"
-            ) or 0.0)
+            avail = flt(
+                frappe.db.get_value(
+                    "Bin",
+                    {"item_code": it.item_code, "warehouse": it.warehouse},
+                    "actual_qty",
+                )
+                or 0.0
+            )
             if avail < flt(it.qty):
                 fg_ok = False
-                frappe.msgprint(f"⚠️ FG short for {it.item_code}: needed {it.qty}, have {avail}")
+                frappe.msgprint(
+                    f"⚠️ FG short for {it.item_code}: needed {it.qty}, have {avail}"
+                )
                 break
 
         # set FG status independently
@@ -503,7 +543,9 @@ def create_and_process_delivery_note(doc, method):
         for rm in dn.custom_raw_material_items:
             if flt(rm.warehouse_qty) < flt(rm.normalized_qty):
                 rm_ok = False
-                frappe.msgprint(f"⚠️ RM short for {rm.item}: needed {rm.normalized_qty:.2f}, have {rm.warehouse_qty:.2f}")
+                frappe.msgprint(
+                    f"⚠️ RM short for {rm.item}: needed {rm.normalized_qty:.2f}, have {rm.warehouse_qty:.2f}"
+                )
                 break
 
         # set RM status independently
@@ -523,7 +565,9 @@ def create_and_process_delivery_note(doc, method):
                 for mi in material_issue_items:
                     se.append("items", mi)
 
-                acc = frappe.db.get_value("Company", doc.company, "default_expense_account")
+                acc = frappe.db.get_value(
+                    "Company", doc.company, "default_expense_account"
+                )
                 if acc:
                     se.difference_account = acc
 
@@ -537,7 +581,9 @@ def create_and_process_delivery_note(doc, method):
                 frappe.msgprint("❌ Failed to create Stock Entry, see error log")
 
         else:
-            frappe.msgprint("⏭️ Skipping Stock Entry: insufficient stock or no items to issue")
+            frappe.msgprint(
+                "⏭️ Skipping Stock Entry: insufficient stock or no items to issue"
+            )
 
         # 8️⃣ Submit DN if FG ok, otherwise leave draft
         if fg_ok:
@@ -562,9 +608,6 @@ def create_and_process_delivery_note(doc, method):
         frappe.msgprint("🚨 Fatal error – check error log")
 
 
-
-
-
 def after_insert_customer(doc, method):
 
     # Step 1️⃣: Check if customer has Shopify Customer ID
@@ -575,7 +618,9 @@ def after_insert_customer(doc, method):
     settings = frappe.get_single("Additional Shopify Settings")
     company = settings.company
     customer_account = settings.customer_account
-    frappe.log_error(f"❌ customer_name {doc.customer_name}", "Shopify Customer Note Automation")
+    frappe.log_error(
+        f"❌ customer_name {doc.customer_name}", "Shopify Customer Note Automation"
+    )
     # Step 3️⃣: If both fields are present
     if company and customer_account:
         # Step 4️⃣: Check if this account row already exists in Customer's accounts table
@@ -593,7 +638,6 @@ def after_insert_customer(doc, method):
             # Step 6️⃣: Save the updated Customer doc
             doc.save(ignore_permissions=True)
             frappe.db.commit()  # Commit to DB
-
 
 
 def compute_bom_metrics(doc, method):
@@ -614,19 +658,23 @@ def compute_bom_metrics(doc, method):
         doc.custom_rm_weight_normalized = normalized_rm_weight
 
         # 4️⃣ Get actual FG weight
-        fg_weight = doc.custom_item_weight*doc.quantity
-        doc.custom_total_fg_weight= fg_weight
+        fg_weight = doc.custom_item_weight * doc.quantity
+        doc.custom_total_fg_weight = fg_weight
 
         # 5️⃣ Compute loss and percentage
         loss_qty = normalized_rm_weight - fg_weight
-        #print(f"Debug ➤ Loss Qty: {normalized_rm_weight}-{fg_weight} {loss_qty}\n\n\n")
+        # print(f"Debug ➤ Loss Qty: {normalized_rm_weight}-{fg_weight} {loss_qty}\n\n\n")
         doc.custom_qty_loss = loss_qty
-        loss_percentage = flt((loss_qty / normalized_rm_weight * 100) if normalized_rm_weight else 0.0)
+        loss_percentage = flt(
+            (loss_qty / normalized_rm_weight * 100) if normalized_rm_weight else 0.0
+        )
         doc.custom_loss_percentage = round(loss_percentage)
 
-        frappe.msgprint(f"Debug ➤ FG Weight: {fg_weight}, Normalized RM: {normalized_rm_weight}")
+        frappe.msgprint(
+            f"Debug ➤ FG Weight: {fg_weight}, Normalized RM: {normalized_rm_weight}"
+        )
 
         # ✅ Optional debug output
-        
+
     except Exception as e:
         frappe.msgprint(f"❌ Error in compute_bom_metrics: {str(e)}")

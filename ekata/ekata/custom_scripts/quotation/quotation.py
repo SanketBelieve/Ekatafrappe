@@ -1,6 +1,7 @@
 import frappe
 
-def validate(self,method = None):
+
+def validate(self, method=None):
     if self.naming_series == "Q .##./.FY.":
         pass
         # if not frappe.db.exists('Quotation', 'Q 24/2022-23'):
@@ -15,7 +16,10 @@ def after_insert(self, method=None):
         updated = False
 
         # Only copy if the fields are empty (first-time insert scenario)
-        if not self.custom_opportunity_category and opportunity.custom_opportunity_category:
+        if (
+            not self.custom_opportunity_category
+            and opportunity.custom_opportunity_category
+        ):
             self.custom_opportunity_category = opportunity.custom_opportunity_category
             updated = True
 
