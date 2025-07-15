@@ -2,7 +2,6 @@
 // For license information, please see license.txt
 
 frappe.query_reports["Work Progress Report"] = {
-    // 1. Define your filters here
     filters: [
         {
             fieldname: "employee",
@@ -24,7 +23,7 @@ frappe.query_reports["Work Progress Report"] = {
         }
     ],
 
-    // 2. Refresh on change
+    // re-run report as soon as you change any filter
     on_change: function() {
         this.refresh();
     }

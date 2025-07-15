@@ -4,48 +4,49 @@ import frappe
 def execute(filters=None):
     filters = filters or {}
 
-    # 1. Build WHERE clauses
+    # 1️⃣ Build WHERE clauses (date-only filters)
     conditions = ["ts.docstatus = 1"]
     if filters.get("employee"):
         conditions.append("ts.employee = %(employee)s")
-    if filters.get("from_datetime"):
-        conditions.append("td.from_time >= %(from_datetime)s")
-    if filters.get("to_datetime"):
-        conditions.append("td.to_time <= %(to_datetime)s")
+    if filters.get("from_date"):
+        # cast from_time to date
+        conditions.append("DATE(td.from_time) >= %(from_date)s")
+    if filters.get("to_date"):
+        # cast to_time to date
+        conditions.append("DATE(td.to_time)   <= %(to_date)s")
 
     where_clause = " AND ".join(conditions)
 
-    # 2. Pull data (including creation as posting_date)
+    # 2️⃣ Fetch data
     data = frappe.db.sql(
         f"""
         SELECT
-            ts.name                       AS timesheet,
-            ts.employee                   AS employee,
-            ts.custom_designation         AS custom_designation,
-            ts.creation                   AS posting_date,
-            td.activity_type              AS activity_type,
-            td.from_time                  AS from_time,
-            td.to_time                    AS to_time,
-            td.custom_expected_to_time    AS expected_to_time,
-            td.custom_delay               AS custom_delay,
-            td.custom_remarks             AS custom_remarks,
-            td.custom_impact              AS custom_impact,
-            td.custom_status              AS custom_status
-
+            ts.name                     AS timesheet,
+            ts.employee                 AS employee,
+            ts.custom_designation       AS custom_designation,
+            ts.creation                 AS posting_date,
+            td.activity_type            AS activity_type,
+            td.from_time                AS from_time,
+            td.to_time                  AS to_time,
+            td.custom_expected_to_time  AS expected_to_time,
+            td.custom_delay             AS custom_delay,
+            td.custom_remarks           AS custom_remarks,
+            td.custom_impact            AS custom_impact,
+            td.custom_status            AS custom_status
         FROM `tabTimesheet Detail` td
         JOIN `tabTimesheet` ts
           ON ts.name = td.parent
         WHERE {where_clause}
         ORDER BY
-          td.from_time,
+          ts.creation,
           ts.name,
           td.idx
-        """,
+    """,
         filters,
         as_dict=True,
     )
 
-    # 3. Define columns (with Posting Date)
+    # 3️⃣ Define columns
     columns = [
         {
             "label": "Timesheet",
@@ -66,7 +67,7 @@ def execute(filters=None):
             "fieldname": "custom_designation",
             "fieldtype": "Link",
             "options": "Designation",
-            "width": 120,
+            "width": 140,
         },
         {
             "label": "Posting Date",
