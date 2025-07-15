@@ -25,7 +25,7 @@
    "hide_border": 0,
    "hide_days": 0,
    "hide_seconds": 0,
-   "idx": 10,
+   "idx": 11,
    "ignore_user_permissions": 0,
    "ignore_xss_filter": 0,
    "in_global_search": 0,
@@ -313,7 +313,7 @@
    "name": "Timesheet Detail-custom_status",
    "no_copy": 0,
    "non_negative": 0,
-   "options": "OPEN\nWIP\nHOLD\nCOMPLETED\nOTHER",
+   "options": "Completed\nProgress\nRework\nNot Approved",
    "owner": "Administrator",
    "parent": null,
    "parentfield": null,
@@ -345,7 +345,7 @@
    "_comments": null,
    "_liked_by": null,
    "_user_tags": null,
-   "creation": "2025-07-14 13:56:48.979794",
+   "creation": "2025-07-15 14:36:18.711702",
    "default_value": null,
    "doc_type": "Timesheet Detail",
    "docstatus": 0,
@@ -353,7 +353,7 @@
    "field_name": null,
    "idx": 0,
    "is_system_generated": 0,
-   "modified": "2025-07-14 13:56:48.979794",
+   "modified": "2025-07-15 14:36:18.711702",
    "modified_by": "Administrator",
    "module": null,
    "name": "Timesheet Detail-main-field_order",
@@ -364,7 +364,7 @@
    "property": "field_order",
    "property_type": "Data",
    "row_name": null,
-   "value": "[\"activity_type\", \"from_time\", \"description\", \"custom_status\", \"custom_impact\", \"custom_remarks\", \"section_break_3\", \"expected_hours\", \"to_time\", \"custom_expected_to_time\", \"delay\", \"hours\", \"completed\", \"project_details\", \"project\", \"project_name\", \"column_break_2\", \"task\", \"section_break_6\", \"is_billable\", \"sales_invoice\", \"column_break_8\", \"billing_hours\", \"section_break_11\", \"base_billing_rate\", \"base_billing_amount\", \"base_costing_rate\", \"base_costing_amount\", \"column_break_14\", \"billing_rate\", \"billing_amount\", \"costing_rate\", \"costing_amount\"]"
+   "value": "[\"activity_type\", \"from_time\", \"description\", \"custom_status\", \"custom_impact\", \"custom_remarks\", \"section_break_3\", \"expected_hours\", \"to_time\", \"custom_expected_to_time\", \"custom_delay\", \"hours\", \"completed\", \"project_details\", \"project\", \"project_name\", \"column_break_2\", \"task\", \"section_break_6\", \"is_billable\", \"sales_invoice\", \"column_break_8\", \"billing_hours\", \"section_break_11\", \"base_billing_rate\", \"base_billing_amount\", \"base_costing_rate\", \"base_costing_amount\", \"column_break_14\", \"billing_rate\", \"billing_amount\", \"costing_rate\", \"costing_amount\"]"
   }
  ],
  "sync_on_migrate": 1

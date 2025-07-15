@@ -21,6 +21,7 @@ def execute(filters=None):
         SELECT
             ts.name                       AS timesheet,
             ts.employee                   AS employee,
+            ts.custom_designation         AS custom_designation,
             td.activity_type              AS activity_type,
             td.from_time                  AS from_time,
             td.to_time                    AS to_time,
@@ -71,6 +72,13 @@ def execute(filters=None):
             "fieldname": "employee",
             "fieldtype": "Link",
             "options": "Employee",
+            "width": 120,
+        },
+        {
+            "label": "Employee Designation",
+            "fieldname": "custom_designation",
+            "fieldtype": "Link",
+            "options": "Designation",
             "width": 120,
         },
         {
