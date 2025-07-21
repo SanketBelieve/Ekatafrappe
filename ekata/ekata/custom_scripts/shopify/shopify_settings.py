@@ -5,13 +5,13 @@ import math
 
 
 def handle_sales_order(doc, method):
-    #!====================================================================================================
-    settings = frappe.get_single("Shopify Settings")
-    if settings.enable_shopify != 1:
-        frappe.msgprint(
-            f"⏭️ Skipping SO {doc.name}: Shopify integration disabled or no shopify_order_id"
-        )
-        return
+    # #!====================================================================================================
+    # settings = frappe.get_single("Shopify Settings")
+    # if settings.enable_shopify != 1:
+    #     frappe.msgprint(
+    #         f"⏭️ Skipping SO {doc.name}: Shopify integration disabled or no shopify_order_id"
+    #     )
+    #     return
     #!====================================================================================================
     if doc.shopify_order_id:
         settings = frappe.get_single("Additional Shopify Settings")
@@ -54,13 +54,13 @@ def handle_sales_order(doc, method):
 
 
 def handle_sales_invoice(doc, method):
-    #!====================================================================================================
-    settings = frappe.get_single("Shopify Settings")
-    if settings.enable_shopify != 1:
-        frappe.msgprint(
-            f"⏭️ Skipping SO {doc.name}: Shopify integration disabled or no shopify_order_id"
-        )
-        return
+    # #!====================================================================================================
+    # settings = frappe.get_single("Shopify Settings")
+    # if settings.enable_shopify != 1:
+    #     frappe.msgprint(
+    #         f"⏭️ Skipping SO {doc.name}: Shopify integration disabled or no shopify_order_id"
+    #     )
+    #     return
     #!====================================================================================================
     if doc.shopify_order_id:
         settings = frappe.get_single("Additional Shopify Settings")
@@ -91,13 +91,13 @@ def handle_sales_invoice(doc, method):
 
 
 def handle_payment_entry(doc, method):
-    #!====================================================================================================
-    settings = frappe.get_single("Shopify Settings")
-    if settings.enable_shopify != 1:
-        frappe.msgprint(
-            f"⏭️ Skipping SO {doc.name}: Shopify integration disabled or no shopify_order_id"
-        )
-        return
+    # #!====================================================================================================
+    # settings = frappe.get_single("Shopify Settings")
+    # if settings.enable_shopify != 1:
+    #     frappe.msgprint(
+    #         f"⏭️ Skipping SO {doc.name}: Shopify integration disabled or no shopify_order_id"
+    #     )
+    #     return
     #!====================================================================================================
 
     for ref in doc.references:
@@ -394,12 +394,12 @@ def handle_payment_entry(doc, method):
 def create_and_process_delivery_note(doc, method):
 
     #!====================================================================================================
-    settings = frappe.get_single("Shopify Settings")
-    if settings.enable_shopify != 1:
-        frappe.msgprint(
-            f"⏭️ Skipping SO {doc.name}: Shopify integration disabled or no shopify_order_id"
-        )
-        return
+    # settings = frappe.get_single("Shopify Settings")
+    # if settings.enable_shopify != 1:
+    #     frappe.msgprint(
+    #         f"⏭️ Skipping SO {doc.name}: Shopify integration disabled or no shopify_order_id"
+    #     )
+    #     return
     #!====================================================================================================
     try:
         # Only process Shopify orders
@@ -639,43 +639,47 @@ def create_and_process_delivery_note(doc, method):
 
 
 def after_insert_customer(doc, method):
-    #!====================================================================================================
-    settings = frappe.get_single("Shopify Settings")
-    if settings.enable_shopify != 1:
-        frappe.msgprint(
-            f"⏭️ Skipping SO {doc.name}: Shopify integration disabled or no shopify_order_id"
-        )
-        return
+    # #!====================================================================================================
+    # settings = frappe.get_single("Shopify Settings")
+    # if settings.enable_shopify != 1:
+    #     frappe.msgprint(
+    #         f"⏭️ Skipping SO {doc.name}: Shopify integration disabled or no shopify_order_id"
+    #     )
+    #     return
     #!====================================================================================================
 
     # Step 1️⃣: Check if customer has Shopify Customer ID
-    if not doc.shopify_customer_id:
-        return  # Skip if no Shopify linkage
+    #!add_customer_bank_details
 
     # Step 2️⃣: Fetch values from "Additional Shopify Settings"
+
     settings = frappe.get_single("Additional Shopify Settings")
-    company = settings.company
-    customer_account = settings.customer_account
-    frappe.log_error(
-        f"❌ customer_name {doc.customer_name}", "Shopify Customer Note Automation"
-    )
-    # Step 3️⃣: If both fields are present
-    if company and customer_account:
-        # Step 4️⃣: Check if this account row already exists in Customer's accounts table
-        already_exists = any(
-            (row.company == company and row.account == customer_account)
-            for row in doc.accounts
+    customer_settings = settings.add_customer_bank_details
+    if customer_settings == 1:
+        if not doc.shopify_customer_id:
+            return  # Skip if no Shopify linkage
+        company = settings.company
+        customer_account = settings.customer_account
+        frappe.log_error(
+            f"❌ customer_name {doc.customer_name}", "Shopify Customer Note Automation"
         )
+        # Step 3️⃣: If both fields are present
+        if company and customer_account:
+            # Step 4️⃣: Check if this account row already exists in Customer's accounts table
+            already_exists = any(
+                (row.company == company and row.account == customer_account)
+                for row in doc.accounts
+            )
 
-        # Step 5️⃣: If not present, append new row
-        if not already_exists:
-            new_row = doc.append("accounts", {})
-            new_row.company = company
-            new_row.account = customer_account
+            # Step 5️⃣: If not present, append new row
+            if not already_exists:
+                new_row = doc.append("accounts", {})
+                new_row.company = company
+                new_row.account = customer_account
 
-            # Step 6️⃣: Save the updated Customer doc
-            doc.save(ignore_permissions=True)
-            frappe.db.commit()  # Commit to DB
+                # Step 6️⃣: Save the updated Customer doc
+                doc.save(ignore_permissions=True)
+                frappe.db.commit()  # Commit to DB
 
 
 def compute_bom_metrics(doc, method):

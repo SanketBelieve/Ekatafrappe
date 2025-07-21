@@ -5,6 +5,7 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "add_customer_bank_details",
   "sales_order_cost_center",
   "income_account",
   "paid_from_account",
@@ -90,13 +91,19 @@
    "fieldtype": "Link",
    "label": "Customer Account",
    "options": "Account"
+  },
+  {
+   "default": "0",
+   "fieldname": "add_customer_bank_details",
+   "fieldtype": "Check",
+   "label": "Add Customer Bank Details"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-06-10 11:57:09.459369",
+ "modified": "2025-07-21 13:53:24.886410",
  "modified_by": "Administrator",
  "module": "Ekata",
  "name": "Additional Shopify Settings",
