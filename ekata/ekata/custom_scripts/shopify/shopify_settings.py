@@ -5,6 +5,14 @@ import math
 
 
 def handle_sales_order(doc, method):
+    #!====================================================================================================
+    settings = frappe.get_single("Shopify Settings")
+    if settings.enable_shopify != 1:
+        frappe.msgprint(
+            f"⏭️ Skipping SO {doc.name}: Shopify integration disabled or no shopify_order_id"
+        )
+        return
+    #!====================================================================================================
     if doc.shopify_order_id:
         settings = frappe.get_single("Additional Shopify Settings")
 
@@ -46,6 +54,14 @@ def handle_sales_order(doc, method):
 
 
 def handle_sales_invoice(doc, method):
+    #!====================================================================================================
+    settings = frappe.get_single("Shopify Settings")
+    if settings.enable_shopify != 1:
+        frappe.msgprint(
+            f"⏭️ Skipping SO {doc.name}: Shopify integration disabled or no shopify_order_id"
+        )
+        return
+    #!====================================================================================================
     if doc.shopify_order_id:
         settings = frappe.get_single("Additional Shopify Settings")
         doc.supply = doc.place_of_supply
@@ -75,9 +91,14 @@ def handle_sales_invoice(doc, method):
 
 
 def handle_payment_entry(doc, method):
-    settings = frappe.get_single("Additional Shopify Settings")
-    if settings.mode_of_payment:
-        doc.mode_of_payment = settings.mode_of_payment
+    #!====================================================================================================
+    settings = frappe.get_single("Shopify Settings")
+    if settings.enable_shopify != 1:
+        frappe.msgprint(
+            f"⏭️ Skipping SO {doc.name}: Shopify integration disabled or no shopify_order_id"
+        )
+        return
+    #!====================================================================================================
 
     for ref in doc.references:
         if ref.reference_doctype == "Sales Invoice":
@@ -371,6 +392,15 @@ def handle_payment_entry(doc, method):
 
 
 def create_and_process_delivery_note(doc, method):
+
+    #!====================================================================================================
+    settings = frappe.get_single("Shopify Settings")
+    if settings.enable_shopify != 1:
+        frappe.msgprint(
+            f"⏭️ Skipping SO {doc.name}: Shopify integration disabled or no shopify_order_id"
+        )
+        return
+    #!====================================================================================================
     try:
         # Only process Shopify orders
         if not doc.shopify_order_id:
@@ -609,6 +639,14 @@ def create_and_process_delivery_note(doc, method):
 
 
 def after_insert_customer(doc, method):
+    #!====================================================================================================
+    settings = frappe.get_single("Shopify Settings")
+    if settings.enable_shopify != 1:
+        frappe.msgprint(
+            f"⏭️ Skipping SO {doc.name}: Shopify integration disabled or no shopify_order_id"
+        )
+        return
+    #!====================================================================================================
 
     # Step 1️⃣: Check if customer has Shopify Customer ID
     if not doc.shopify_customer_id:
