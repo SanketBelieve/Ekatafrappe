@@ -350,5 +350,16 @@
   "name": "Qty After Loss",
   "script": "frappe.ui.form.on('Stock Entry', {\n  custom_qty_after_loss(frm) {\n    // log all three fields\n    console.log(\n      '[Cropster] 👀',\n      'afterLoss=', frm.doc.custom_qty_after_loss,\n      'cropsterEntry=', frm.doc.custom_cropster_entry,\n      'lossPct=', frm.doc.process_loss_percentage\n    );\n\n    // same guard\n    if (frm.doc.custom_cropster_entry === 1\n        && frm.doc.process_loss_percentage\n        && frm.doc.process_loss_percentage > 0) {\n\n      let afterQty = flt(frm.doc.custom_qty_after_loss, 6);\n      let lossPct  = flt(frm.doc.process_loss_percentage, 6);\n      let factor   = (100 - lossPct) / 100;\n      let fg       = factor > 0 ? flt(afterQty / factor, 2) : 0;\n\n      console.log('[Cropster] computed fg_completed_qty →', fg);\n      frm.set_value('fg_completed_qty', fg);\n      frm.refresh_field('fg_completed_qty');\n      frappe.show_alert({message: `Finished Good Qty: ${fg}`, indicator: 'green'});\n\n    } else {\n      console.log('[Cropster] conditions not met, skipping calc');\n    }\n  }\n});\n",
   "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Employee",
+  "enabled": 1,
+  "modified": "2025-08-07 16:59:49.028981",
+  "module": null,
+  "name": "Employee Bonus Month",
+  "script": "frappe.ui.form.on('Employee', {\n    validate: function(frm) {\n        const table = frm.doc.custom_months_for_bonus || [];\n        const fy_map = {};\n\n        for (let row of table) {\n            const start_date = row.start_date;\n            const end_date = row.end_date;\n            const month = row.month;\n\n            // Check if all fields are filled\n            if (!start_date || !end_date || !month) {\n                frappe.throw(__('Each row in \"Months for Bonus\" must have Start Date, End Date, and Month filled.'));\n            }\n\n            // Derive fiscal year from calendar year of start_date\n            const date = frappe.datetime.str_to_obj(start_date);\n            const fiscal_year = `${date.getFullYear()}`;\n\n            // Initialize fiscal year list if not present\n            if (!fy_map[fiscal_year]) {\n                fy_map[fiscal_year] = [];\n            }\n\n            // Check for duplicate month within the same fiscal year\n            if (fy_map[fiscal_year].includes(month)) {\n                frappe.throw(\n                    __('Duplicate month \"{0}\" found for fiscal year \"{1}\" in \"Months for Bonus\".', [month, fiscal_year])\n                );\n            }\n\n            fy_map[fiscal_year].push(month);\n\n            // Limit to 2 months per fiscal year\n            if (fy_map[fiscal_year].length > 2) {\n                frappe.throw(\n                    __('Only 2 bonus months allowed per fiscal year. Fiscal Year \"{0}\" has more.', [fiscal_year])\n                );\n            }\n        }\n    }\n});\n",
+  "view": "Form"
  }
 ]
