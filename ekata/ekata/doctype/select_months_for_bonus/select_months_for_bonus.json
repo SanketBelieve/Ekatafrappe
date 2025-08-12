@@ -31,7 +31,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Month",
-   "options": "January\nFebruary\nMarch\nApril\nMay\nJune\nJuly\nAugust\nSeptember\nOctober\nNovember\nDecember",
+   "options": "\nJanuary\nFebruary\nMarch\nApril\nMay\nJune\nJuly\nAugust\nSeptember\nOctober\nNovember\nDecember",
    "reqd": 1
   },
   {
@@ -44,7 +44,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-08-12 18:18:17.217151",
+ "modified": "2025-08-12 18:19:34.542731",
  "modified_by": "Administrator",
  "module": "Ekata",
  "name": "Select Months For Bonus",
