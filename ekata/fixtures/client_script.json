@@ -361,5 +361,16 @@
   "name": "Employee Bonus Month",
   "script": "frappe.ui.form.on('Employee', {\n    validate: function(frm) {\n        const table = frm.doc.custom_months_for_bonus || [];\n        const fy_map = {};\n\n        for (let row of table) {\n            const start_date = row.start_date;\n            const end_date = row.end_date;\n            const month = row.month;\n\n            // Check if all fields are filled\n            if (!start_date || !end_date || !month) {\n                frappe.throw(__('Each row in \"Months for Bonus\" must have Start Date, End Date, and Month filled.'));\n            }\n\n            // Derive fiscal year from calendar year of start_date\n            const date = frappe.datetime.str_to_obj(start_date);\n            const fiscal_year = `${date.getFullYear()}`;\n\n            // Initialize fiscal year list if not present\n            if (!fy_map[fiscal_year]) {\n                fy_map[fiscal_year] = [];\n            }\n\n            // Check for duplicate month within the same fiscal year\n            if (fy_map[fiscal_year].includes(month)) {\n                frappe.throw(\n                    __('Duplicate month \"{0}\" found for fiscal year \"{1}\" in \"Months for Bonus\".', [month, fiscal_year])\n                );\n            }\n\n            fy_map[fiscal_year].push(month);\n\n            // Limit to 2 months per fiscal year\n            if (fy_map[fiscal_year].length > 2) {\n                frappe.throw(\n                    __('Only 2 bonus months allowed per fiscal year. Fiscal Year \"{0}\" has more.', [fiscal_year])\n                );\n            }\n        }\n    }\n});\n",
   "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Timesheet",
+  "enabled": 1,
+  "modified": "2025-08-14 16:28:37.552880",
+  "module": null,
+  "name": "Timesheet Form",
+  "script": "frappe.ui.form.on(\"Timesheet\", {\n    validate: function(frm) {\n        let today = frappe.datetime.get_today();\n\n        (frm.doc.time_logs || []).forEach(row => {\n            // Check From Date\n            if (row.from_time) {\n                let from_date = frappe.datetime.obj_to_str(\n                    frappe.datetime.str_to_obj(row.from_time)\n                );\n                if (from_date < today) {\n                    frappe.throw(__(\"Row {0}: From Time cannot be a past date.\", [row.idx]));\n                }\n            }\n\n            // Check To Date\n            if (row.to_time) {\n                let to_date = frappe.datetime.obj_to_str(\n                    frappe.datetime.str_to_obj(row.to_time)\n                );\n                if (to_date < today) {\n                    frappe.throw(__(\"Row {0}: To Time cannot be a past date.\", [row.idx]));\n                }\n            }\n        });\n    }\n});\n",
+  "view": "Form"
  }
 ]
