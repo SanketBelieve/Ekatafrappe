@@ -35,6 +35,7 @@ def execute(filters=None):
         stock_value = opening_row.get("stock_value")
 
     available_serial_nos = {}
+    print(sl_entries)
     for sle in sl_entries:
         item_detail = item_details[sle.item_code]
 
@@ -43,8 +44,8 @@ def execute(filters=None):
         # sle.update('')
         sle.update(
             {
-                "receipt_no": sle.get("receipt_no"),
-                "outturn_no": sle.get("outturn_no"),
+                # "receipt_no": sle.get("receipt_no"),
+                # "outturn_no": sle.get("outturn_no"),
                 "season": sle.get("season"),
                 "grower_code": sle.get("grower_code"),
                 "bags": sle.get("bags"),
@@ -261,14 +262,16 @@ def get_columns():
         {
             "label": _("Outturn No"),
             "fieldname": "outturn_no",
-            "fieldtype": "Link",
+            # "fieldtype": "Link",
+            "fieldtype": "Data",
             "options": "Outturn No",
             "width": 100,
         },
         {
             "label": _("Lot No"),
             "fieldname": "receipt_no",
-            "fieldtype": "Link",
+            # "fieldtype": "Link",
+            "fieldtype": "Data",
             "options": "Receipt No",
             "width": 100,
         },
@@ -399,52 +402,113 @@ def get_stock_ledger_entries(filters, items):
             ", ".join(frappe.db.escape(i) for i in items)
         )
 
+    # sl_entries = frappe.db.sql(
+    #     """
+	# 	SELECT
+	# 		concat_ws(" ", posting_date, posting_time) AS date,
+	# 		item_code,
+	# 		warehouse,
+	# 		actual_qty,
+	# 		qty_after_transaction,
+	# 		incoming_rate,
+	# 		valuation_rate,
+	# 		stock_value,
+	# 		voucher_type,
+	# 		voucher_no,
+	# 		batch_no,
+	# 		serial_no,
+	# 		company,
+	# 		project,
+	# 		stock_value_difference,
+	# 		receipt_no,
+	# 		outturn_no,
+	# 		season,
+	# 		grower_code,
+	# 		bags,
+	# 		gunny,
+	# 		location,
+	# 		receipt_no_data
+	# 		category,
+	# 		sample_mc,
+	# 		sample_ot,
+	# 		sample_grade,
+	# 		pb,
+	# 		a,
+	# 		b,
+	# 		c,
+	# 		bbb,
+	# 		coffee_processing,
+	# 		note
+	# 	FROM
+	# 		`tabStock Ledger Entry` sle
+	# 	WHERE
+	# 		company = %(company)s
+	# 			AND is_cancelled = 0 AND posting_date BETWEEN %(from_date)s AND %(to_date)s
+	# 			{sle_conditions}
+	# 			{item_conditions_sql}
+	# 	ORDER BY
+	# 		posting_date asc, posting_time asc, creation asc
+	# 	""".format(
+    #         sle_conditions=get_sle_conditions(filters),
+    #         item_conditions_sql=item_conditions_sql,
+    #     ),
+    #     filters,
+    #     as_dict=1,
+    # )
+    # return sl_entries
+
     sl_entries = frappe.db.sql(
         """
 		SELECT
 			concat_ws(" ", posting_date, posting_time) AS date,
-			item_code,
-			warehouse,
-			actual_qty,
-			qty_after_transaction,
-			incoming_rate,
-			valuation_rate,
-			stock_value,
-			voucher_type,
-			voucher_no,
-			batch_no,
-			serial_no,
-			company,
-			project,
-			stock_value_difference,
-			receipt_no,
-			outturn_no,
-			season,
-			grower_code,
-			bags,
-			gunny,
-			location,
-			receipt_no_data
-			category,
-			sample_mc,
-			sample_ot,
-			sample_grade,
-			pb,
-			a,
-			b,
-			c,
-			bbb,
-			coffee_processing,
-			note
+			sle.item_code,
+			sle.warehouse,
+			sle.actual_qty,
+			sle.qty_after_transaction,
+			sle.incoming_rate,
+			sle.valuation_rate,
+			sle.stock_value,
+			sle.voucher_type,
+			sle.voucher_no,
+			sle.batch_no,
+			sle.serial_no,
+			sle.company,
+			sle.project,
+			sle.stock_value_difference,
+			
+            sed.receipt_no,
+			sed.outturn_no,
+			
+            sle.season,
+			sle.grower_code,
+			sle.bags,
+			sle.gunny,
+			sle.location,
+			sle.receipt_no_data,
+			sle.category,
+			sle.sample_mc,
+			sle.sample_ot,
+			sle.sample_grade,
+			sle.pb,
+			sle.a,
+			sle.b,
+			sle.c,
+			sle.bbb,
+			sle.coffee_processing,
+			sle.note
 		FROM
 			`tabStock Ledger Entry` sle
+        LEFT JOIN `tabStock Entry Detail` sed 
+            ON sed.parent = sle.voucher_no
+            AND sle.voucher_type = "Stock Entry"
+            AND sed.item_code = sle.item_code
 		WHERE
-			company = %(company)s
+			sle.company = %(company)s
 				AND is_cancelled = 0 AND posting_date BETWEEN %(from_date)s AND %(to_date)s
 				{sle_conditions}
 				{item_conditions_sql}
 		ORDER BY
-			posting_date asc, posting_time asc, creation asc
+			sle.posting_date asc, sle.posting_time asc, sle.creation asc
 		""".format(
             sle_conditions=get_sle_conditions(filters),
             item_conditions_sql=item_conditions_sql,
