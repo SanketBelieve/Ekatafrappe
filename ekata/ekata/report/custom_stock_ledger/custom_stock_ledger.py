@@ -586,15 +586,15 @@ def get_sle_conditions(filters):
         if warehouse_condition:
             conditions.append(warehouse_condition)
     if filters.get("voucher_no"):
-        conditions.append("voucher_no=%(voucher_no)s")
+        conditions.append("sle.voucher_no=%(voucher_no)s")
     if filters.get("batch_no"):
-        conditions.append("batch_no=%(batch_no)s")
+        conditions.append("sle.batch_no=%(batch_no)s")
     if filters.get("project"):
-        conditions.append("project=%(project)s")
+        conditions.append("sle.project=%(project)s")
     if filters.get("receipt_no"):
-        conditions.append("receipt_no=%(receipt_no)s")
+        conditions.append("sed.receipt_no=%(receipt_no)s")
     if filters.get("outturn_no"):
-        conditions.append("outturn_no=%(outturn_no)s")
+        conditions.append("sed.outturn_no=%(outturn_no)s")
 
     return "and {}".format(" and ".join(conditions)) if conditions else ""
 
