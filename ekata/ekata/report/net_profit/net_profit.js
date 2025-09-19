@@ -21,6 +21,17 @@ frappe.query_reports["Net Profit"] = {
             fieldtype: "Date",
             reqd: 1,
             default: frappe.datetime.get_today()
+        },
+        {
+            fieldname: "account_type",
+            label: __("Account Type"),
+            fieldtype: "MultiSelectList",
+            options: [
+                { value: "Income", description: "Income" },
+                { value: "Expense", description: "Expense" },
+                { value: "Net Profit", description: "Net Profit" }
+            ],
+            default: ["Income", "Expense", "Net Profit"]
         }
     ]
 };
