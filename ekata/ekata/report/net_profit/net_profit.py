@@ -18,6 +18,9 @@ def execute(filters=None):
     selected_accounts = filters.get("account_type") or []
     if isinstance(selected_accounts, str):  
         selected_accounts = [selected_accounts]
+    
+    if not selected_accounts:
+        selected_accounts = ["Income", "Expense", "Net Profit"]
 
     period_list = get_period_list(
         None,
