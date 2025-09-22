@@ -112,7 +112,7 @@
    "name": "Item-custom_item_type",
    "no_copy": 0,
    "non_negative": 0,
-   "options": "\nRoasted Coffee \nRaw Material In Green Coffee\nFG In Green Coffee",
+   "options": "\nRoasted Coffee\nRaw Material In Green Coffee\nFG In Green Coffee",
    "owner": "Administrator",
    "parent": null,
    "parentfield": null,

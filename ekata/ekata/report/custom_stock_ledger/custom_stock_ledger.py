@@ -499,9 +499,9 @@ def get_stock_ledger_entries(filters, items):
 		FROM
 			`tabStock Ledger Entry` sle
         LEFT JOIN `tabStock Entry Detail` sed 
-            ON sed.parent = sle.voucher_no
+            ON sed.name = sle.voucher_detail_no
             AND sle.voucher_type = "Stock Entry"
-            AND sed.item_code = sle.item_code
+            
 		WHERE
 			sle.company = %(company)s
 				AND is_cancelled = 0 AND posting_date BETWEEN %(from_date)s AND %(to_date)s
