@@ -6,6 +6,25 @@ frappe.ui.form.on("Purchase Receipt", {
                 "receipt_no": frm.doc.lot_no
             });
         });
+    },
+    validate:function(frm){
+        if (frm.is_new() && frm.doc.workflow_state){
+            frm.set_value("custom_workflow_status",frm.doc.workflow_state);
+        }
+    },
+    after_workflow_action:function(frm){
+        if (frm.doc.workflow_state){
+            frappe.call({
+                method:"ekata.ekata.custom_scripts.purchase_receipt.purchase_receipt_py.update_workflow_status",
+                args: {
+                    docname : frm.doc.name,
+                    workflow_state: frm.doc.workflow_state
+                },
+                callback:function(r){
+                    cur_frm.reload_doc()
+                }
+            })
+        }
     }
 });
 frappe.ui.form.on("Purchase Receipt Item", {
@@ -50,3 +69,7 @@ frappe.ui.form.on("Purchase Receipt Item", {
         }
     }
 });
+
+
+
+

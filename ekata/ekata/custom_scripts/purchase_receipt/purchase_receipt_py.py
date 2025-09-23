@@ -84,3 +84,10 @@ def create_stock_entry_from_purchase_receipts(source_name, target_doc=None):
     for item in items:
         stock_entry.append("items", item)
     return stock_entry
+
+
+@frappe.whitelist()
+def update_workflow_status(docname,workflow_state):
+    if docname:
+        frappe.set_value("Purchase Receipt", docname,"custom_workflow_status",workflow_state)
+
