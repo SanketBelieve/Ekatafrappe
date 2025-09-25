@@ -200,7 +200,9 @@ doc_events = {
         "validate": "ekata.ekata.custom_scripts.material_request.material_request.validate"
     },
     "Stock Ledger Entry": {
-        "validate": "ekata.ekata.custom_scripts.stock_ledger_entry.stock_ledger_entry_py.validate"
+        "validate": "ekata.ekata.custom_scripts.stock_ledger_entry.stock_ledger_entry_py.validate",
+        "after_insert": "ekata.ekata.custom_scripts.stock_ledger_entry.stock_ledger_entry_py.after_insert",
+        
     },
     "Opportunity": {
         "after_insert": "ekata.ekata.custom_scripts.opportunity.opportunity.validate"
@@ -214,6 +216,9 @@ doc_events = {
     "Customer": {
         "after_insert": "ekata.ekata.custom_scripts.shopify.shopify_settings.after_insert_customer"
     },
+    "Purchase Receipt":{
+        "validate":"ekata.ekata.custom_scripts.purchase_receipt.purchase_receipt_py.validate"
+    }
 }
 
 # Scheduled Tasks

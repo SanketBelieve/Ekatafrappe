@@ -2,7 +2,9 @@ import frappe
 from frappe.model.mapper import get_mapped_doc
 import json
 
-
+def validate(doc, method=None):
+    if doc.lot_no:
+        doc.receipt_no = doc.lot_no
 @frappe.whitelist()
 def get_no_of_bags(qty, bag_cat):
     print("\nkgs--------bag_cat---------\n", qty, bag_cat)
