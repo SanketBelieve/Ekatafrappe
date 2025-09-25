@@ -7,6 +7,10 @@ frappe.ui.form.on("Purchase Receipt", {
             });
         });
     },
+    lot_no: function(frm) {
+        update_receipt_no(frm),
+        update_child_rows(frm)
+    },
     validate:function(frm){
         if (frm.is_new() && frm.doc.workflow_state){
             frm.set_value("custom_workflow_status",frm.doc.workflow_state);
@@ -48,6 +52,14 @@ frappe.ui.form.on("Purchase Receipt Item", {
             });
         }
     },
+    item_code: function(frm, cdt, cdn) {
+        let row = locals[cdt][cdn];
+        update_custom_lot_no(frm, row);
+    },
+    items_add: function(frm, cdt, cdn) {
+        let row = locals[cdt][cdn];
+        update_custom_lot_no(frm, row);
+    },
     bag_category: function(frm, cdt, cdn) {
         var row = locals[cdt][cdn];
         if (row.qty && row.bag_category){
@@ -69,7 +81,21 @@ frappe.ui.form.on("Purchase Receipt Item", {
         }
     }
 });
+function update_receipt_no(frm) {
+    frm.set_value('receipt_no', frm.doc.lot_no || '');
+}
 
+function update_child_rows(frm) {
+    frm.doc.items.forEach(function(row) {
+        update_custom_lot_no(frm, row);
+    });
+    frm.refresh_field('items');
+}
+function update_custom_lot_no(frm, child_row) {
+    if (child_row) {
+        frappe.model.set_value(child_row.doctype, child_row.name, 'custom_lot_no', frm.doc.lot_no || '');
+    }
+}
 
 
 
