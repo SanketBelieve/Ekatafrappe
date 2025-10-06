@@ -7,6 +7,14 @@ frappe.ui.form.on("Purchase Receipt", {
             });
         });
     },
+    onload:function(frm) {
+        if (frm.doc.lot_no) {
+            console.log(frm.doc.lot_no);
+            frm.doc.items.forEach(row => {
+                frappe.model.set_value(row.doctype, row.name, 'custom_lot_no', frm.doc.lot_no);
+            });
+        }
+    },
     lot_no: function(frm) {
         update_receipt_no(frm),
         update_child_rows(frm)
