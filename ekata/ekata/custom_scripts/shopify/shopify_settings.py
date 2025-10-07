@@ -99,7 +99,7 @@ def handle_payment_entry(doc, method):
     #     )
     #     return
     #!====================================================================================================
-
+    settings = frappe.get_single("Additional Shopify Settings")
     for ref in doc.references:
         if ref.reference_doctype == "Sales Invoice":
             invoice = frappe.get_doc("Sales Invoice", ref.reference_name)
