@@ -253,3 +253,151 @@ def create_quotation_from_feedback(feedback_name):
         f"Quotation {quotation.name} created for Customer {feedback.customer}."
     )
     return quotation.name
+
+
+@frappe.whitelist()
+def create_opportunity_from_feedback(feedback_name):
+    """
+    Create an Opportunity from Feedback.
+
+    - Prefers Customer as party if feedback.customer exists, otherwise falls back to Lead.
+    - Copies items from Feedback into Opportunity (if any).
+    - Links Customer/Lead addresses to the created Opportunity (so the Address.links table contains the Opportunity link).
+    - Requires Feedback.status == "Rejected" (keeps previous safety check; remove/change if you don't want this).
+    """
+    feedback = frappe.get_doc("Feedback", feedback_name)
+
+    # Keep the previous safety check (remove if not desired)
+    if getattr(feedback, "status", None) and feedback.status != "Rejected":
+        frappe.throw("Feedback status must be 'Rejected' to create an Opportunity.")
+
+    # Must have a party (Customer or Lead)
+    if not feedback.customer and not feedback.lead:
+        frappe.throw(
+            "Feedback must have either a Customer or a Lead to create an Opportunity."
+        )
+
+    meta = frappe.get_meta("Opportunity")
+    opportunity = frappe.new_doc("Opportunity")
+
+    # Party setup
+    if feedback.customer:
+        opportunity.opportunity_from = "Customer"
+        # some ERPNext versions store customer in 'customer' field
+        if meta.has_field("customer"):
+            opportunity.customer = feedback.customer
+        opportunity.party_name = feedback.customer
+    else:
+        opportunity.opportunity_from = "Lead"
+        if meta.has_field("lead"):
+            opportunity.lead = feedback.lead
+        opportunity.party_name = feedback.lead
+
+    # Safe field assignments (only if fields exist)
+    if meta.has_field("enquiry_type"):
+        # prefer feedback.enquiry_type if present, else default to 'Sales'
+        opportunity.enquiry_type = getattr(feedback, "enquiry_type", "Sales") or "Sales"
+
+    # custom / optional fields
+    if meta.has_field("custom_opportunity_category"):
+        opportunity.custom_opportunity_category = getattr(
+            feedback, "opportunity_category", None
+        ) or getattr(feedback, "type", None)
+    if meta.has_field("custom_lead_type"):
+        opportunity.custom_lead_type = getattr(feedback, "lead_type", None)
+    if meta.has_field("purpose"):
+        opportunity.purpose = getattr(feedback, "opportunity_purpose", None) or getattr(
+            feedback, "lead_purpose", None
+        )
+
+    # Contact & company
+    if meta.has_field("contact_email"):
+        opportunity.contact_email = getattr(feedback, "contact_email", None)
+    if meta.has_field("contact_mobile"):
+        opportunity.contact_mobile = getattr(feedback, "contact_phone", None)
+
+    opportunity.transaction_date = frappe.utils.nowdate()
+    opportunity.opportunity_owner = getattr(
+        feedback, "opportunity_owner", frappe.session.user
+    )
+    opportunity.company = getattr(
+        feedback, "company", frappe.defaults.get_user_default("Company")
+    )
+
+    # Keep feedback reference if field exists
+    if meta.has_field("feedback_reference"):
+        opportunity.feedback_reference = feedback.name
+
+    # Append items (if any)
+    if getattr(feedback, "items", None):
+        for item in feedback.items:
+            opportunity.append(
+                "items",
+                {
+                    "item_code": item.item,
+                    "qty": item.qty or 1,
+                    "rate": item.rate or 0,
+                    "amount": item.amount or (item.qty * (item.rate or 0)),
+                    "schedule_date": frappe.utils.nowdate(),
+                },
+            )
+
+    # Insert opportunity
+    opportunity.insert(ignore_permissions=True)
+    frappe.db.commit()
+
+    # Link addresses to Opportunity
+    # If Customer exists, link Customer addresses; else link Lead addresses
+    try:
+        if feedback.customer:
+            billing_addr, shipping_addr = get_customer_addresses(feedback.customer)
+            for addr_name in (billing_addr, shipping_addr):
+                if not addr_name:
+                    continue
+                addr_doc = frappe.get_doc("Address", addr_name)
+                already_linked = any(
+                    link.link_doctype == "Opportunity"
+                    and link.link_name == opportunity.name
+                    for link in getattr(addr_doc, "links", [])
+                )
+                if not already_linked:
+                    addr_doc.append(
+                        "links",
+                        {"link_doctype": "Opportunity", "link_name": opportunity.name},
+                    )
+                    addr_doc.save(ignore_permissions=True)
+            frappe.db.commit()
+        else:
+            # Using Lead addresses fallback
+            billing_addr = get_address_for_entity(feedback.lead, "Lead", "billing")
+            shipping_addr = get_address_for_entity(feedback.lead, "Lead", "shipping")
+            for addr_name in (billing_addr, shipping_addr):
+                if not addr_name:
+                    continue
+                addr_doc = frappe.get_doc("Address", addr_name)
+                already_linked = any(
+                    link.link_doctype == "Opportunity"
+                    and link.link_name == opportunity.name
+                    for link in getattr(addr_doc, "links", [])
+                )
+                if not already_linked:
+                    addr_doc.append(
+                        "links",
+                        {"link_doctype": "Opportunity", "link_name": opportunity.name},
+                    )
+                    addr_doc.save(ignore_permissions=True)
+            frappe.db.commit()
+    except Exception as e:
+        # don't break if address linking fails — opportunity is already created — but raise a helpful message
+        frappe.log_error(
+            frappe.get_traceback(),
+            f"create_opportunity_from_feedback: address linking failed for {opportunity.name}",
+        )
+        frappe.msgprint(
+            f"Opportunity {opportunity.name} created but address linking had an error: {e}"
+        )
+
+    frappe.msgprint(
+        f"Opportunity {opportunity.name} created from Feedback {feedback.name}."
+    )
+    return opportunity.name
