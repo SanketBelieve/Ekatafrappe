@@ -8,7 +8,7 @@ frappe.ui.form.on("Purchase Receipt", {
         });
     },
     onload:function(frm) {
-        if (frm.doc.lot_no) {
+        if (frm.doc.lot_no && frm.is_new()) {
             console.log(frm.doc.lot_no);
             frm.doc.items.forEach(row => {
                 frappe.model.set_value(row.doctype, row.name, 'custom_lot_no', frm.doc.lot_no);
