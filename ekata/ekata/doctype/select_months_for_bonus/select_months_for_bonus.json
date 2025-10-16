@@ -9,7 +9,8 @@
   "start_date",
   "end_date",
   "month",
-  "remarks"
+  "remarks",
+  "festival_list"
  ],
  "fields": [
   {
@@ -37,19 +38,28 @@
   {
    "fieldname": "remarks",
    "fieldtype": "Small Text",
+   "hidden": 1,
    "label": "Remarks"
+  },
+  {
+   "fieldname": "festival_list",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Festival List",
+   "options": "\nChristmas\nEaster\nOnam\nVishu\nEid\nRamzan\nPongal\nDiwali\nUgadi\nGowri Ganesha"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2025-08-12 18:19:34.542731",
+ "modified": "2025-10-15 14:47:46.108013",
  "modified_by": "Administrator",
  "module": "Ekata",
  "name": "Select Months For Bonus",
  "owner": "Administrator",
  "permissions": [],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []
