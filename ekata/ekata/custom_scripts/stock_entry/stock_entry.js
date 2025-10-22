@@ -60,10 +60,7 @@ frappe.ui.form.on('Stock Entry', {
         if (frm.doc.lot_no) {
             frm.events.updateItems(frm, 'receipt_no', frm.doc.lot_no);
         }
-        if (frm.is_new() && frm.doc.workflow_state){
-            frm.set_value("custom_workflow_status",frm.doc.workflow_state);
-        }
-   },
+    },
    
    updateItems: function(frm, field, value) {
         if (frm.doc.items && frm.doc.items.length) {
@@ -85,30 +82,17 @@ frappe.ui.form.on('Stock Entry', {
             frm.events.updateItems(frm, 'receipt_no', frm.doc.lot_no);
         }
    },
-    stock_entry_type: function(frm) {
-        // Copy value from stock_entry_type to stock_type
-        frm.set_value('custom_stock_type', frm.doc.stock_entry_type);
-    },
-    after_workflow_action:function(frm){
-        if (frm.doc.workflow_state){
+    after_workflow_action: function (frm) {
             frappe.call({
-                method:"ekata.ekata.custom_scripts.stock_entry.stock_entry.update_workflow_status",
+                method:"ekata.ekata.custom_scripts.stock_entry.stock_entry.kanban_group",
                 args: {
                     docname : frm.doc.name,
-                    workflow_state: frm.doc.workflow_state
                 },
                 callback:function(r){
                     cur_frm.reload_doc()
                 }
             })
-        }
     },
-    custom_stock_type: function(frm) {
-        update_kanban_group(frm);
-    },
-    custom_workflow_status: function(frm) {
-        update_kanban_group(frm);
-    }
 });
 
 frappe.ui.form.on('Stock Entry Detail',{
@@ -142,18 +126,3 @@ frappe.ui.form.on('Stock Entry Detail',{
     }
 });
 
-function update_kanban_group(frm) {
-    // Get current values
-    let stockType = frm.doc.custom_stock_type || '';
-    let workflow = frm.doc.custom_workflow_status || 'Not Started';
-
-    // Combine values
-    let combinedValue = `${stockType} - ${workflow}`;
-
-    // Dynamically set options for Select field
-    let options = [combinedValue];
-    frm.set_df_property('custom_kanban_group', 'options', options);
-
-    // Set the field value
-    frm.set_value('custom_kanban_group', combinedValue);
-}
