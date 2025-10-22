@@ -87,6 +87,11 @@ def create_repack_entry(source_name, target_doc=None):
                 },
             )
     return stock_entry
+@frappe.whitelist()
+def update_workflow_status(docname,workflow_state):
+    if docname:
+        frappe.set_value("Stock Entry", docname,"custom_workflow_status",workflow_state)
+
 
 
 # def apply_composition_items_to_stock_entry(doc, method):
