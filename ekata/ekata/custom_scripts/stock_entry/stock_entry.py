@@ -58,7 +58,8 @@ def validate(doc, method=None):
         # Recalculate total values
         doc.set_total_incoming_outgoing_value()
 
-
+def before_save(doc,method=None):
+    set_custom_kanban_group(doc)
 @frappe.whitelist()
 def create_repack_entry(source_name, target_doc=None):
     print(">>> create repack entry >>>")
@@ -87,7 +88,36 @@ def create_repack_entry(source_name, target_doc=None):
                 },
             )
     return stock_entry
+def set_custom_kanban_group(doc):
+    """
+    Automatically sets custom_kanban_group as "<Stock Entry Type> - <Workflow State>"
+    before saving the document.
+    """
 
+    workflow_state = doc.get("workflow_state")
+    stock_entry_type = doc.get("stock_entry_type")
+
+    if workflow_state and stock_entry_type:
+        # Set the custom_kanban_group in the desired format
+        doc.custom_kanban_group = f"{stock_entry_type} - {workflow_state}"
+    else:
+        # If either field is missing, set empty
+        doc.custom_kanban_group = ""
+@frappe.whitelist()
+def kanban_group(docname):
+    if docname:
+        doc = frappe.get_doc("Stock Entry",docname)
+        workflow_state = doc.get("workflow_state")
+        stock_entry_type = doc.get("stock_entry_type")
+
+        if workflow_state and stock_entry_type:
+            # Set the custom_kanban_group in the desired format
+            doc.custom_kanban_group = f"{stock_entry_type} - {workflow_state}"
+        else:
+            # If either field is missing, set empty
+            doc.custom_kanban_group = ""
+
+        doc.save()
 
 # def apply_composition_items_to_stock_entry(doc, method):
 #     # Check if this is a Cropster entry and item_type is "Material Receipt"

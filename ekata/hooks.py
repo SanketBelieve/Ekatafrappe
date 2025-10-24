@@ -195,6 +195,7 @@ doc_events = {
     "Stock Entry": {
         "on_submit": "ekata.ekata.custom_scripts.stock_entry.stock_entry.on_submit",
         "validate": "ekata.ekata.custom_scripts.stock_entry.stock_entry.validate",
+        "before_save": "ekata.ekata.custom_scripts.stock_entry.stock_entry.before_save",
     },
     "Material Request": {
         "validate": "ekata.ekata.custom_scripts.material_request.material_request.validate"

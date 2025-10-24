@@ -60,8 +60,8 @@ frappe.ui.form.on('Stock Entry', {
         if (frm.doc.lot_no) {
             frm.events.updateItems(frm, 'receipt_no', frm.doc.lot_no);
         }
-   },
-
+    },
+   
    updateItems: function(frm, field, value) {
         if (frm.doc.items && frm.doc.items.length) {
             let doctype = frm.doc.items[0].doctype;
@@ -81,8 +81,20 @@ frappe.ui.form.on('Stock Entry', {
         if (frm.doc.lot_no) {
             frm.events.updateItems(frm, 'receipt_no', frm.doc.lot_no);
         }
-   }
+   },
+    after_workflow_action: function (frm) {
+            frappe.call({
+                method:"ekata.ekata.custom_scripts.stock_entry.stock_entry.kanban_group",
+                args: {
+                    docname : frm.doc.name,
+                },
+                callback:function(r){
+                    cur_frm.reload_doc()
+                }
+            })
+    },
 });
+
 frappe.ui.form.on('Stock Entry Detail',{
     fg_percentage: function(frm,cdt,cdn){
         var row = locals[cdt][cdn];
@@ -113,3 +125,4 @@ frappe.ui.form.on('Stock Entry Detail',{
         }
     }
 });
+
