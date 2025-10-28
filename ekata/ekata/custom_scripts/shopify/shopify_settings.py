@@ -636,73 +636,46 @@ def handle_payment_entry(doc, method):
 #         )
 #         frappe.msgprint("🚨 Fatal error – check error log")
 def create_and_process_delivery_note(doc, method):
-    """Auto-create Delivery Note, expand BOMs, check stock,
-    and create Material Receipts + Material Issue Stock Entries as needed.
+    """Auto-create Delivery Note from Shopify SO, expand BOMs,
+    handle insufficient stock for both RM & FG by creating Material Receipts,
+    then issue RM and submit DN if stock is sufficient.
     """
 
     try:
-        # ────────────────────────────────────────────────
-        # 1️⃣ Validate that it's a Shopify order
-        # ────────────────────────────────────────────────
+        # ─────────────── 1️⃣ Shopify validation ───────────────
         if not doc.shopify_order_id:
             frappe.msgprint(f"⏭️ Skipping SO {doc.name}: no shopify_order_id")
-            frappe.log_error(
-                title="Skip Shopify hook",
-                message=f"SO {doc.name} lacks shopify_order_id",
-            )
+            frappe.log_error("Skip Shopify hook", f"SO {doc.name} lacks shopify_order_id")
             return
 
-        # ────────────────────────────────────────────────
-        # 2️⃣ Define UOM conversion helpers
-        # ────────────────────────────────────────────────
+        # ─────────────── 2️⃣ UOM conversion helper ───────────────
         UOM_CONVERSION = {
             "g": 1, "gram": 1, "grams": 1, "gm": 1,
             "kg": 1000, "kgs": 1000, "kilogram": 1000, "kilograms": 1000,
         }
-
         def normalize_uom(u):
             return UOM_CONVERSION.get((u or "").strip().lower(), 1)
 
-        # ────────────────────────────────────────────────
-        # 3️⃣ Create base Delivery Note draft
-        # ────────────────────────────────────────────────
+        # ─────────────── 3️⃣ Create base DN ───────────────
         dn = make_delivery_note(doc.name)
         dn.custom_stock_status = dn.custom_rm_stock_status = "Insufficient"
-
-        # Default Branch
         branch = frappe.get_all("Branch", fields=["name"], limit_page_length=1, order_by="creation ASC")
         if not branch:
             frappe.msgprint("❌ No Branch found – cannot create DN.")
             return
-
         dn.branch = branch[0].name
         dn.custom_delivery_note_category = "Ecommerce-Blending"
-        dn.set_posting_time = 1
-        dn.posting_date = today()
+        dn.set_posting_time, dn.posting_date = 1, today()
 
-        # ────────────────────────────────────────────────
-        # 4️⃣ Expand BOM → plan RM & Material Issue items
-        # ────────────────────────────────────────────────
+        # ─────────────── 4️⃣ Expand BOMs ───────────────
         material_issue_items, used_boms = [], set()
-
         for so_line in doc.items:
-            boms = frappe.get_all(
-                "BOM",
-                filters={"item": so_line.item_code, "is_active": 1, "docstatus": 1},
-                fields=["name"],
-            )
+            boms = frappe.get_all("BOM", filters={"item": so_line.item_code, "is_active": 1, "docstatus": 1}, fields=["name"])
             if not boms:
                 frappe.msgprint(f"⚠️ No BOM for {so_line.item_code}")
                 continue
-
-            flagged = frappe.get_value(
-                "BOM",
-                {"item": so_line.item_code, "custom_sales_order_automation": 1},
-                "name",
-            )
-            bom_name = flagged or (
-                boms[0].name if len(boms) == 1 else sorted([b.name for b in boms], reverse=True)[0]
-            )
+            flagged = frappe.get_value("BOM", {"item": so_line.item_code, "custom_sales_order_automation": 1}, "name")
+            bom_name = flagged or (boms[0].name if len(boms) == 1 else sorted([b.name for b in boms], reverse=True)[0])
             bom = frappe.get_doc("BOM", bom_name)
             used_boms.add(bom_name)
             base_qty = flt(bom.quantity) or 1.0
@@ -710,13 +683,10 @@ def create_and_process_delivery_note(doc, method):
             for bi in bom.items:
                 qty = flt(bi.qty) / base_qty * flt(so_line.qty)
                 wh = bi.source_warehouse or so_line.warehouse
-                wh_qty = flt(
-                    frappe.db.get_value("Bin", {"item_code": bi.item_code, "warehouse": wh}, "actual_qty") or 0
-                )
-                item_stock_uom = frappe.db.get_value("Item", bi.item_code, "stock_uom") or bi.uom
-                norm_qty = qty * (normalize_uom(bi.uom) / normalize_uom(item_stock_uom))
+                wh_qty = flt(frappe.db.get_value("Bin", {"item_code": bi.item_code, "warehouse": wh}, "actual_qty") or 0)
+                stock_uom = frappe.db.get_value("Item", bi.item_code, "stock_uom") or bi.uom
+                norm_qty = qty * (normalize_uom(bi.uom) / normalize_uom(stock_uom))
 
-                # Append to DN raw material table
                 dn.append(
                     "custom_raw_material_items",
                     {
@@ -726,18 +696,16 @@ def create_and_process_delivery_note(doc, method):
                         "warehouse": wh,
                         "warehouse_qty": wh_qty,
                         "normalized_qty": norm_qty,
-                        "weight": qty,
-                        "stock_uom": item_stock_uom,
+                        "stock_uom": stock_uom,
                     },
                 )
 
-                # Add to Material Issue candidates
                 material_issue_items.append(
                     {
                         "item_code": bi.item_code,
                         "qty": norm_qty,
-                        "uom": item_stock_uom,
-                        "stock_uom": item_stock_uom,
+                        "uom": stock_uom,
+                        "stock_uom": stock_uom,
                         "conversion_factor": 1.0,
                         "s_warehouse": wh,
                     }
@@ -746,15 +714,11 @@ def create_and_process_delivery_note(doc, method):
         dn.custom_bom_used = ", ".join(sorted(used_boms)) or "None"
         dn.insert(ignore_permissions=True)
 
-        # ────────────────────────────────────────────────
-        # 5️⃣ Helper functions
-        # ────────────────────────────────────────────────
+        # ─────────────── 5️⃣ Stock helpers ───────────────
         def fg_status_and_deficits(dn_doc):
             deficits, ok = [], True
             for it in dn_doc.items:
-                avail = flt(
-                    frappe.db.get_value("Bin", {"item_code": it.item_code, "warehouse": it.warehouse}, "actual_qty") or 0
-                )
+                avail = flt(frappe.db.get_value("Bin", {"item_code": it.item_code, "warehouse": it.warehouse}, "actual_qty") or 0)
                 if avail < flt(it.qty):
                     ok = False
                     deficits.append((it.item_code, it.qty - avail, it.uom, it.warehouse))
@@ -763,97 +727,68 @@ def create_and_process_delivery_note(doc, method):
         def rm_status_and_deficits(dn_doc):
             deficits, ok = [], True
             for rm in dn_doc.custom_raw_material_items:
-                avail = flt(
-                    frappe.db.get_value("Bin", {"item_code": rm.item, "warehouse": rm.warehouse}, "actual_qty") or 0
-                )
+                avail = flt(frappe.db.get_value("Bin", {"item_code": rm.item, "warehouse": rm.warehouse}, "actual_qty") or 0)
                 if avail < flt(rm.normalized_qty):
                     ok = False
                     deficits.append((rm.item, rm.normalized_qty - avail, rm.stock_uom or rm.uom, rm.warehouse))
             return ok, deficits
 
-        def make_material_receipts(deficit_lines, company, dn_name, entry_type):
-            """Creates grouped Material Receipt stock entries per warehouse
-               and links them back to DN for traceability."""
-            if not deficit_lines:
+        def make_material_receipts(lines, company, dn_name, label):
+            """Create Material Receipts per warehouse for given deficit items."""
+            if not lines:
                 return []
-
-            warehouse_map = {}
-            for item_code, qty, uom, wh in deficit_lines:
-                warehouse_map.setdefault(wh, []).append((item_code, qty, uom))
-
-            created_entries = []
-            for wh, items in warehouse_map.items():
+            grouped = {}
+            for item_code, qty, uom, wh in lines:
+                grouped.setdefault(wh, []).append((item_code, qty, uom))
+            created = []
+            for wh, items in grouped.items():
                 se = frappe.new_doc("Stock Entry")
                 se.stock_entry_type = se.purpose = "Material Receipt"
-                se.company = company
-                se.set_posting_time, se.posting_date = 1, today()
+                se.company, se.set_posting_time, se.posting_date = company, 1, today()
                 se.custom_linked_delivery_note = dn_name
                 for item_code, qty, uom in items:
-                    if flt(qty) <= 0:
-                        continue
-                    se.append(
-                        "items",
-                        {
+                    if flt(qty) > 0:
+                        se.append("items", {
                             "item_code": item_code,
                             "qty": flt(qty),
                             "uom": uom,
                             "stock_uom": uom,
                             "conversion_factor": 1.0,
                             "t_warehouse": wh,
-                        },
-                    )
+                        })
                 acc = frappe.db.get_value("Company", company, "default_expense_account")
                 if acc:
                     se.difference_account = acc
                 se.insert(ignore_permissions=True)
                 se.submit()
-                created_entries.append(se.name)
+                created.append(se.name)
+                dn.append("custom_auto_receipts", {
+                    "receipt_type": label,
+                    "stock_entry": se.name,
+                    "warehouse": wh,
+                })
+            return created
 
-                # Link created entry back to DN
-                dn.append(
-                    "custom_auto_receipts",
-                    {"receipt_type": entry_type, "stock_entry": se.name, "warehouse": wh},
-                )
-
-            return created_entries
-
-        # ────────────────────────────────────────────────
-        # 6️⃣ Stock sufficiency checks
-        # ────────────────────────────────────────────────
+        # ─────────────── 6️⃣ First stock check ───────────────
         fg_ok, fg_def = fg_status_and_deficits(dn)
         rm_ok, rm_def = rm_status_and_deficits(dn)
-        dn.custom_stock_status = "Sufficient" if fg_ok else "Insufficient"
-        dn.custom_rm_stock_status = "Sufficient" if rm_ok else "Insufficient"
 
-        # ────────────────────────────────────────────────
-        # 7️⃣ Auto-create Material Receipts for shortages
-        # ────────────────────────────────────────────────
-        if rm_def:
-            rm_entries = make_material_receipts(rm_def, doc.company, dn.name, "Raw Material")
-            if rm_entries:
-                frappe.msgprint(f"📥 Auto Material Receipts (RM): {', '.join(rm_entries)}")
+        # ─────────────── 7️⃣ Handle RM insufficiency first ───────────────
+        if not rm_ok and rm_def:
+            rm_receipts = make_material_receipts(rm_def, doc.company, dn.name, "Raw Material")
+            if rm_receipts:
+                frappe.msgprint(f"📥 Material Receipts for RM: {', '.join(rm_receipts)}")
                 dn.reload()
 
+        # After replenishing RM, check again
         rm_ok, rm_def = rm_status_and_deficits(dn)
         dn.custom_rm_stock_status = "Sufficient" if rm_ok else "Insufficient"
 
-        if fg_def:
-            fg_entries = make_material_receipts(fg_def, doc.company, dn.name, "Finished Goods")
-            if fg_entries:
-                frappe.msgprint(f"📦 Auto Material Receipts (FG): {', '.join(fg_entries)}")
-                dn.reload()
-
-        fg_ok, fg_def = fg_status_and_deficits(dn)
-        dn.custom_stock_status = "Sufficient" if fg_ok else "Insufficient"
-
-        # ────────────────────────────────────────────────
-        # 8️⃣ Create Material Issue (consume RM)
-        # ────────────────────────────────────────────────
+        # ─────────────── 8️⃣ Create Material Issue (always after RM check) ───────────────
         if material_issue_items:
             se = frappe.new_doc("Stock Entry")
             se.stock_entry_type = se.purpose = "Material Issue"
-            se.company = doc.company
-            se.set_posting_time, se.posting_date = 1, today()
+            se.company, se.set_posting_time, se.posting_date = doc.company, 1, today()
             se.custom_linked_delivery_note = dn.name
             for mi in material_issue_items:
                 se.append("items", mi)
@@ -866,21 +801,27 @@ def create_and_process_delivery_note(doc, method):
         else:
             frappe.msgprint("ℹ️ No RM to issue (no BOM items).")
 
-        # ────────────────────────────────────────────────
-        # 9️⃣ Submit DN if FG stock now sufficient
-        # ────────────────────────────────────────────────
-        if fg_ok:
+        # ─────────────── 9️⃣ Handle FG insufficiency next ───────────────
+        fg_ok, fg_def = fg_status_and_deficits(dn)
+        if not fg_ok and fg_def:
+            fg_receipts = make_material_receipts(fg_def, doc.company, dn.name, "Finished Goods")
+            if fg_receipts:
+                frappe.msgprint(f"📦 Material Receipts for FG: {', '.join(fg_receipts)}")
+                dn.reload()
+        fg_ok, fg_def = fg_status_and_deficits(dn)
+        dn.custom_stock_status = "Sufficient" if fg_ok else "Insufficient"
+
+        # ─────────────── 🔟 Submit DN only when both are sufficient ───────────────
+        if fg_ok and rm_ok:
             dn.submit()
             frappe.msgprint(f"✅ Delivery Note submitted: {dn.name}")
         else:
-            frappe.msgprint("⏭️ DN remains Draft due to FG shortage.")
+            frappe.msgprint("⏭️ DN remains Draft — insufficient FG or RM.")
 
         dn.save(ignore_permissions=True)
 
     except Exception:
-        frappe.log_error(
-            title=f"Fatal hook error for SO {doc.name}", message=frappe.get_traceback()
-        )
+        frappe.log_error(f"Fatal hook error for SO {doc.name}", frappe.get_traceback())
         frappe.msgprint("🚨 Fatal error – check error log")
 
 def after_insert_customer(doc, method):
