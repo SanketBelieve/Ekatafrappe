@@ -1,4 +1,7 @@
-from . import __version__ as app_version
+try:
+    from . import __version__ as app_version
+except:
+    pass
 
 app_name = "ekata"
 app_title = "Ekata"
