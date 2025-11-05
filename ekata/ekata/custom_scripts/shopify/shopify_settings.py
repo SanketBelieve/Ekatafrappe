@@ -812,13 +812,34 @@ def create_and_process_delivery_note(doc, method):
         dn.custom_stock_status = "Sufficient" if fg_ok else "Insufficient"
 
         # ─────────────── 🔟 Submit DN only when both are sufficient ───────────────
-        if fg_ok and rm_ok:
-            dn.submit()
-            frappe.msgprint(f"✅ Delivery Note submitted: {dn.name}")
-        else:
-            frappe.msgprint("⏭️ DN remains Draft — insufficient FG or RM.")
+        # if fg_ok and rm_ok:
+        #     dn.submit()
+        #     frappe.msgprint(f"✅ Delivery Note submitted: {dn.name}")
+        # else:
+        #     frappe.msgprint("⏭️ DN remains Draft — insufficient FG or RM.")
 
-        dn.save(ignore_permissions=True)
+        # dn.save(ignore_permissions=True)
+
+        if fg_ok:
+            try:
+    
+                dn.custom_stock_status = "Sufficient"
+                dn.custom_rm_stock_status = "Sufficient"
+                dn.submit()
+                
+                frappe.msgprint(f" Delivery Note submitted: {dn.name}")
+            except Exception:
+                frappe.log_error(
+                    title=f"DN submit error {dn.name}", message=frappe.get_traceback()
+                )
+                frappe.msgprint("Failed to submit DN.")
+        else:
+            frappe.msgprint("DN remains Draft (FG still short).")
+        
+            dn = frappe.get_doc("Delivery Note", dn.name)
+            dn.custom_stock_status = "Sufficient"
+            dn.custom_rm_stock_status = "Sufficient"
+            dn.save()
 
     except Exception:
         frappe.log_error(f"Fatal hook error for SO {doc.name}", frappe.get_traceback())
