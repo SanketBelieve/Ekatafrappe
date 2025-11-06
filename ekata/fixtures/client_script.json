@@ -2,6 +2,61 @@
  {
   "docstatus": 0,
   "doctype": "Client Script",
+  "dt": "Sales Invoice",
+  "enabled": 1,
+  "modified": "2025-09-09 02:02:53.970176",
+  "module": null,
+  "name": "Sales invoice - hide update stock",
+  "script": "frappe.ui.form.on(\"Sales Invoice\", {\r\n    refresh: function(frm) {\r\n        // Hide Update Stock by default\r\n        frm.set_df_property(\"update_stock\", \"hidden\", 1);\r\n\r\n        // Check if user has System Manager role\r\n        if (frappe.user.has_role(\"System Manager\")) {\r\n            frm.set_df_property(\"update_stock\", \"hidden\", 0);\r\n        }\r\n    }\r\n});\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Sales Invoice",
+  "enabled": 1,
+  "modified": "2025-09-19 10:36:12.671724",
+  "module": null,
+  "name": "Commission rate per unit",
+  "script": "frappe.ui.form.on('Sales Invoice', {\r\n    validate: function(frm) {\r\n        let total_qty = 0;\r\n\r\n        // Get total quantity of all items\r\n        (frm.doc.items || []).forEach(function(item) {\r\n            total_qty += item.qty;\r\n        });\r\n\r\n        // Apply incentive calculation on Sales Team\r\n        (frm.doc.sales_team || []).forEach(function(row) {\r\n            if (row.custom_commission_rate_per_unit) {\r\n                row.incentives = total_qty * row.custom_commission_rate_per_unit;\r\n            }\r\n        });\r\n\r\n        frm.refresh_field('sales_team');\r\n    }\r\n});\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Leave Application",
+  "enabled": 0,
+  "modified": "2025-10-10 14:35:56.483233",
+  "module": null,
+  "name": "LA",
+  "script": "frappe.ui.form.on('Leave Application', {\r\n    onload: function(frm) {\r\n        if (frm.is_new()) {\r\n            frm.set_value('verbally_approved_by_manager', '');\r\n        }\r\n        if (!frappe.user.has_role('Employee')) {\r\n            frm.set_df_property('verbally_approved_by_manager', 'read_only', 1);\r\n        }\r\n    },\r\n    validate: function(frm) {\r\n        if (frappe.user.has_role('Employee') && !frm.doc.verbally_approved_by_manager) {\r\n            frappe.throw(__('Please select \"Verbally Approved by Manager\" before submitting.'));\r\n        }\r\n    }\r\n});\r\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Attendance",
+  "enabled": 1,
+  "modified": "2025-10-16 13:37:57.983689",
+  "module": null,
+  "name": "Attendance",
+  "script": "frappe.listview_settings['Attendance'] = {\r\n    onload: function(listview) {\r\n        const allowed_roles = ['HR Manager', 'System Manager'];\r\n\r\n        // Check if user has at least one allowed role\r\n        const has_role = allowed_roles.some(role => frappe.user.has_role(role));\r\n\r\n        if (has_role) {\r\n            listview.page.add_inner_button(__('Mark Attendance'), function() {\r\n                frappe.msgprint('Mark Attendance clicked!');\r\n                // Add your logic here\r\n            });\r\n        }\r\n    }\r\n};\r\n",
+  "view": "List"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Stock Entry",
+  "enabled": 1,
+  "modified": "2025-10-17 12:40:07.300833",
+  "module": null,
+  "name": "Stock Entry Form",
+  "script": "frappe.ui.form.on('Stock Entry', {\n    onload: function(frm) {\n        // Make sure existing rows respect checkbox on form load\n        frm.fields_dict['items'].grid.grid_rows.forEach(function(grid_row) {\n            let row = grid_row.doc;\n            grid_row.toggle_editable('basic_rate', row.set_basic_rate_manually);\n        });\n    }\n});\n\n// Trigger when checkbox is toggled\nfrappe.ui.form.on('Stock Entry Detail', {\n    set_basic_rate_manually: function(frm, cdt, cdn) {\n        let row = locals[cdt][cdn];\n        let grid_row = frm.fields_dict['items'].grid.get_row(cdn);\n\n        // Toggle basic_rate editable only for this row\n        grid_row.toggle_editable('basic_rate', row.set_basic_rate_manually);\n    },\n    items_add: function(frm, cdt, cdn) {\n        let grid_row = frm.fields_dict['items'].grid.get_row(cdn);\n        // New rows default basic_rate to read-only\n        grid_row.toggle_editable('basic_rate', false);\n    }\n});\n",
+  "view": "Form"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
   "dt": "Employee",
   "enabled": 0,
   "modified": "2025-08-24 19:05:19.374936",
