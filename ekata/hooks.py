@@ -44,6 +44,8 @@ doctype_js = {
     "Shipment": "ekata/custom_scripts/shipment/shipment.js",
     "Purchase Order": "ekata/custom_scripts/purchase_order/purchase_order.js",
     "Purchase Receipt": "ekata/public/js/purchase_receipt.js",
+
+
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 doctype_list_js = {
@@ -175,7 +177,8 @@ doc_events = {
         "after_insert": "ekata.ekata.custom_scripts.shopify.shopify_settings.handle_sales_invoice",
     },
     "Purchase Order": {
-        "validate": "ekata.ekata.custom_scripts.purchase_order.purchase_order.validate"
+        "validate": "ekata.ekata.custom_scripts.purchase_order.purchase_order.validate",
+        "on_update_after_submit":"ekata.ekata.custom_scripts.purchase_order.purchase_order.on_update_after_submit",
     },
     "Quotation": {
         "validate": "ekata.ekata.custom_scripts.quotation.quotation.validate",
