@@ -249,7 +249,7 @@
   "message": "<p>Dear Production Team,</p>\n\n<p>A new sale order has been placed and requires production. Please find the details below:</p>\n\n<ul>\n  <li><strong>Order Number:</strong> {{ doc.name }}</li>\n</ul>\n\n<p><strong>Product Details:</strong></p>\n<table border=\"1\" cellpadding=\"6\" cellspacing=\"0\">\n  <thead>\n    <tr>\n      <th>Item</th>\n      <th>Quantity</th>\n    </tr>\n  </thead>\n  <tbody>\n    {% for item in doc.items %}\n    <tr>\n      <td>{{ item.item_name }}</td>\n      <td>{{ item.qty }}</td>\n    </tr>\n    {% endfor %}\n  </tbody>\n</table>\n\n<ul>\n  <li><strong>Delivery Deadline:</strong> {{ doc.delivery_date }}</li>\n  <li><strong>Client Name:</strong> {{ doc.customer_name }}</li>\n</ul>\n\n<p>Kindly proceed with production as per the order specifications. The sale order document is attached for reference.</p>\n\n<p>Best regards,<br>\n[Your Name]<br>\n{{ doc.company }}</p>\n\n\n",
   "message_type": "Markdown",
   "method": null,
-  "modified": "2025-03-31 19:14:57.166716",
+  "modified": "2025-11-11 15:54:56.129375",
   "module": null,
   "name": "Sale Order Confirmation for Invoice Preparation",
   "print_format": "PROFORMA Sales Order Updated",
