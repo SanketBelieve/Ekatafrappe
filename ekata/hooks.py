@@ -44,6 +44,7 @@ doctype_js = {
     "Shipment": "ekata/custom_scripts/shipment/shipment.js",
     "Purchase Order": "ekata/custom_scripts/purchase_order/purchase_order.js",
     "Purchase Receipt": "ekata/public/js/purchase_receipt.js",
+    "Quotation":"ekata/custom_scripts/quotation/quotation.js",
 
 
 }
