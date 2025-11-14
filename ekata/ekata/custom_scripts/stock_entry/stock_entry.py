@@ -58,18 +58,49 @@ def validate(doc, method=None):
         # Recalculate total values
         doc.set_total_incoming_outgoing_value()
 
-def before_save(doc,method=None):
+def before_save(doc,method):
     set_custom_kanban_group(doc)
+    set_stock_entry_valuation_rates(doc,method)
+# @frappe.whitelist()
+# def create_repack_entry(source_name, target_doc=None):
+#     print(">>> create repack entry >>>")
+#     doc = frappe.flags.args.doc
+#     SEDoc = frappe.get_doc("Stock Entry", doc["name"])
+#     stock_entry = frappe.new_doc("Stock Entry")
+#     stock_entry.stock_entry_type = "Repack"
+#     stock_entry.set_posting_time = 1
+#     for item in SEDoc.items:
+#         print("\n\n >>>> ", item)
+#         if item.is_finished_item == 1:
+#             stock_entry.append(
+#                 "items",
+#                 {
+#                     "s_warehouse": item.t_warehouse,
+#                     "item_code": item.item_code,
+#                     "qty": item.qty,
+#                     "uom": item.uom,
+#                     "stock_uom": item.stock_uom,
+#                     "basic_rate": item.basic_rate,
+#                     "batch_no": item.batch_no,
+#                     "receipt_no": item.receipt_no,
+#                     "outturn_no": item.outturn_no,
+#                     "season": item.season,
+#                     "coffee_processing_details": item.coffee_processing_details,
+#                 },
+#             )
+#     return stock_entry
+
+
 @frappe.whitelist()
 def create_repack_entry(source_name, target_doc=None):
-    print(">>> create repack entry >>>")
+    print("------->>> create repack entry >>>")
     doc = frappe.flags.args.doc
     SEDoc = frappe.get_doc("Stock Entry", doc["name"])
     stock_entry = frappe.new_doc("Stock Entry")
-    stock_entry.stock_entry_type = "Repack"
+    stock_entry.stock_entry_type = "Repacked"
     stock_entry.set_posting_time = 1
+
     for item in SEDoc.items:
-        print("\n\n >>>> ", item)
         if item.is_finished_item == 1:
             stock_entry.append(
                 "items",
@@ -87,22 +118,29 @@ def create_repack_entry(source_name, target_doc=None):
                     "coffee_processing_details": item.coffee_processing_details,
                 },
             )
+
+    # Set custom kanban group for repack entries
+    stock_entry.custom_kanban_group = f"{stock_entry.stock_entry_type} - Repacked"
+
     return stock_entry
 def set_custom_kanban_group(doc):
-    """
-    Automatically sets custom_kanban_group as "<Stock Entry Type> - <Workflow State>"
-    before saving the document.
-    """
+
+#     """
+#     Automatically sets custom_kanban_group as "<Stock Entry Type> - <Workflow State>"
+#     before saving the document.
+#     """
 
     workflow_state = doc.get("workflow_state")
     stock_entry_type = doc.get("stock_entry_type")
 
     if workflow_state and stock_entry_type:
         # Set the custom_kanban_group in the desired format
-        doc.custom_kanban_group = f"{stock_entry_type} - {workflow_state}"
+        doc.custom_kanban_group = f"{stock_entry_type} - {workflow_state}"  
+        
     else:
-        # If either field is missing, set empty
+        
         doc.custom_kanban_group = ""
+
 @frappe.whitelist()
 def kanban_group(docname):
     if docname:
@@ -193,3 +231,43 @@ def kanban_group(docname):
 #         doc.save()
 #     else:
 #         frappe.msgprint("ℹ️ No composition items found to deduct.")
+
+
+
+def set_stock_entry_valuation_rates(doc, method):
+    if doc.purpose != "Manufacture" or not doc.work_order:
+        return
+
+    wo = frappe.get_doc("Work Order", doc.work_order)
+    if not wo.bom_no: return
+
+    bom = frappe.get_doc("BOM", wo.bom_no)
+
+    bom_map = {}
+    total_cost = 0
+
+    for i in bom.items:
+        rate = float(i.rate or 0)
+        qty = float(i.qty or 0)
+        cost = rate * qty
+        total_cost += cost
+        bom_map[i.item_code] = rate
+
+    fg_rate = total_cost / (bom.quantity or 1)
+
+    for row in doc.items:
+        # raw materials
+        if row.item_code in bom_map:
+            rate = bom_map[row.item_code]
+            row.basic_rate = rate
+            row.rate = rate
+            row.amount = rate * row.qty
+            row.valuation_rate = rate
+
+        # finished good
+        if row.t_warehouse and not row.s_warehouse:
+            rate = fg_rate
+            row.basic_rate = rate
+            row.rate = rate
+            row.amount = rate * row.qty
+            row.valuation_rate = rate
