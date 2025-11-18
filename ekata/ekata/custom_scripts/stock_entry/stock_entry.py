@@ -57,6 +57,7 @@ def validate(doc, method=None):
 
         # Recalculate total values
         doc.set_total_incoming_outgoing_value()
+    update_pr_status(doc,method)    
 
 def before_save(doc,method):
     set_custom_kanban_group(doc)
@@ -271,3 +272,36 @@ def set_stock_entry_valuation_rates(doc, method):
             row.rate = rate
             row.amount = rate * row.qty
             row.valuation_rate = rate
+
+import frappe
+
+def update_pr_status(doc, method):
+    print("=== Stock Entry Save Triggered ===")
+    print("Stock Entry:", doc.name)
+
+    # Collect all PR numbers from item table
+    pr_list = []
+
+    for item in doc.items:
+        if item.reference_purchase_receipt:
+            pr_list.append(item.reference_purchase_receipt)
+
+    pr_list = list(set(pr_list))  # remove duplicates
+    print("Linked Purchase Receipts found:", pr_list)
+
+    if not pr_list:
+        print("No Purchase Receipt linked in items")
+        return
+
+    # Update all linked Purchase Receipts
+    for pr in pr_list:
+        print(f"Updating PR {pr}: custom_workflow_status = Stock Entry Created")
+
+        frappe.db.set_value(
+            "Purchase Receipt",
+            pr,
+            "custom_workflow_status",
+            "Stock Entry Created"
+        )
+
+    print("=== Purchase Receipt Status Updated ===")
