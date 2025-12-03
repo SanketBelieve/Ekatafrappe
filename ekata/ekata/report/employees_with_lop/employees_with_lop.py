@@ -5,10 +5,12 @@
 
 
 import frappe
-
 def execute(filters=None):
     filters = filters or {}
-    employee = filters.get("employee", "")
+
+    employee = filters.get("employee")
+    from_date = filters.get("from_date")
+    to_date = filters.get("to_date")
 
     columns = [
         {"label": "Employee", "fieldname": "employee", "fieldtype": "Link", "options": "Employee", "width": 150},
@@ -17,9 +19,16 @@ def execute(filters=None):
         {"label": "Total Leave Days", "fieldname": "total_leave_days", "fieldtype": "Float", "width": 150},
     ]
 
-    condition = ""
+    conditions = "WHERE la.leave_type = 'Leave Without Pay' AND la.docstatus = 1 AND e.status = 'Active'"
+
     if employee:
-        condition = " AND la.employee = %(employee)s"
+        conditions += " AND la.employee = %(employee)s"
+
+    if from_date:
+        conditions += " AND la.from_date >= %(from_date)s"
+
+    if to_date:
+        conditions += " AND la.to_date <= %(to_date)s"
 
     data = frappe.db.sql(f"""
         SELECT DISTINCT
@@ -29,10 +38,7 @@ def execute(filters=None):
             la.total_leave_days
         FROM `tabLeave Application` la
         LEFT JOIN `tabEmployee` e ON la.employee = e.name
-        WHERE la.leave_type = 'Leave Without Pay'
-        AND la.docstatus = 1
-        AND e.status = 'Active'
-        {condition}
-    """, {"employee": employee}, as_dict=True)
+        {conditions}
+    """, filters, as_dict=True)
 
     return columns, data
