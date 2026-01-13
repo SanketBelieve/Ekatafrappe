@@ -37,7 +37,7 @@ frappe.ui.form.on('Stock Entry', {
    },
 
    validate: function(frm){
-        if(frm.doc.stock_entry_type == 'Repack' || frm.doc.stock_entry_type == 'Bulking'){
+        if(frm.doc.stock_entry_type == 'Repacked' || frm.doc.stock_entry_type == 'Bulking'){
             if (frm.doc.items && frm.doc.items.length) {
                 var fg_per = 0;
                 $.each(frm.doc.items || [], function(i, item) {
