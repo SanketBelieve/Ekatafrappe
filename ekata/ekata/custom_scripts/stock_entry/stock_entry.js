@@ -93,6 +93,11 @@ frappe.ui.form.on('Stock Entry', {
                 }
             })
     },
+    stock_entry_type: function (frm) {
+        if (frm.doc.stock_entry_type === "ROASTED COFFEE") {
+            frm.set_value('custom_coffee_type', 'Green');
+        }
+    }
 });
 
 frappe.ui.form.on('Stock Entry Detail',{
@@ -113,7 +118,7 @@ frappe.ui.form.on('Stock Entry Detail',{
                 }
             });
         }
-        console.log('row qty',rm_qty,'fg per', fg_per)
+
         if (fg_per <= 100 ){
             var fg_qty = (rm_qty * row.fg_percentage) / 100
             fg_qty = Math.round(fg_qty);

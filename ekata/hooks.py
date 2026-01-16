@@ -200,6 +200,8 @@ doc_events = {
         "on_submit": "ekata.ekata.custom_scripts.stock_entry.stock_entry.on_submit",
         "validate": "ekata.ekata.custom_scripts.stock_entry.stock_entry.validate",
         "before_save": "ekata.ekata.custom_scripts.stock_entry.stock_entry.before_save",
+        "on_cancel":"ekata.ekata.custom_scripts.stock_entry.stock_entry.on_cancel",
+        "before_insert": "ekata.ekata.custom_scripts.stock_entry.stock_entry.on_cancel",
     },
     "Material Request": {
         "validate": "ekata.ekata.custom_scripts.material_request.material_request.validate"
@@ -223,7 +225,7 @@ doc_events = {
     },
     "Purchase Receipt":{
         "validate":"ekata.ekata.custom_scripts.purchase_receipt.purchase_receipt_py.validate"
-    }
+    },   
 }
 
 # Scheduled Tasks
