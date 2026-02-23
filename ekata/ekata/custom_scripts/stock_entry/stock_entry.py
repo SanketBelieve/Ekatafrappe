@@ -94,7 +94,7 @@ def before_save(doc,method):
 
 @frappe.whitelist()
 def create_repack_entry(source_name, target_doc=None):
-    print("------->>> create repack entry >>>")
+
     doc = frappe.flags.args.doc
     SEDoc = frappe.get_doc("Stock Entry", doc["name"])
     stock_entry = frappe.new_doc("Stock Entry")
@@ -287,15 +287,12 @@ def update_pr_status(doc, method):
             pr_list.append(item.reference_purchase_receipt)
 
     pr_list = list(set(pr_list))  # remove duplicates
-    print("Linked Purchase Receipts found:", pr_list)
 
     if not pr_list:
-        print("No Purchase Receipt linked in items")
         return
 
     # Update all linked Purchase Receipts
     for pr in pr_list:
-        print(f"Updating PR {pr}: custom_workflow_status = Stock Entry Created")
 
         frappe.db.set_value(
             "Purchase Receipt",
@@ -306,17 +303,17 @@ def update_pr_status(doc, method):
 
     print("=== Purchase Receipt Status Updated ===")
 
-# def on_cancel(doc, method):
-#     if doc.stock_entry_type == "Material Receipt" and doc.custom_material_issue_referance:
-#         mi = frappe.get_doc("Stock Entry", doc.custom_material_issue_referance)
-#         if mi.docstatus == 1:
-#             mi.cancel()
+def on_cancel(doc, method):
+    if doc.stock_entry_type == "Material Receipt" and doc.custom_material_issue_referance:
+        mi = frappe.get_doc("Stock Entry", doc.custom_material_issue_referance)
+        if mi.docstatus == 1:
+            mi.cancel()
 
-# def before_insert(doc, method):
-#     if doc.doctype == "Stock Entry" and doc.amended_from:
-#         old_doc = frappe.get_doc("Stock Entry", doc.amended_from)
+def before_insert(doc, method):
+    if doc.doctype == "Stock Entry" and doc.amended_from:
+        old_doc = frappe.get_doc("Stock Entry", doc.amended_from)
 
-#         if old_doc.docstatus == 2:
-#             doc.posting_date = old_doc.posting_date
-#             doc.posting_time = old_doc.posting_time
+        if old_doc.docstatus == 2:
+            doc.posting_date = old_doc.posting_date
+            doc.posting_time = old_doc.posting_time
 
