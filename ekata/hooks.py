@@ -276,6 +276,10 @@ override_whitelisted_methods = {
     "erpnext.stock.doctype.purchase_receipt.purchase_receipt.make_stock_entry": "ekata.ekata.custom_scripts.purchase_receipt.purchase_receipt_py.create_stock_entry",
 }
 
+from ecommerce_integrations.shopify import connection 
+from ekata.ekata.custom_scripts.shopify import shopify_override 
+connection._validate_request = shopify_override.validate_request
+
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
 # along with any modifications made in other Frappe apps
